@@ -209,7 +209,12 @@ Figures `importance_RandomForest_variant*.png` and
 
 - Why the MLP on Variant A differs between machines (a likely explanation is
   given above, not measured).
-- Which MQTTset file and features each cited 97–99% paper used.
+- Comparison with the literature: first pass done in `papers/PAPER_SCAN.md`.
+  Most 99%+ MQTT results in the reading list use MQTT-IoT-IDS2020 or other
+  datasets, so the 93.27% ceiling does not apply to them. The one MQTTset
+  results paper (paper 15) uses 4 classes and SMOTE, so it is not directly
+  comparable either. Still to read in full: papers 15 and 23, the original
+  MQTTset paper, and Zeghida et al. (2023) / Prajisha & Vasudevan (2022).
 - Hyperparameters were not tuned (by design, per the brief). Tuned models could
   score differently.
 
