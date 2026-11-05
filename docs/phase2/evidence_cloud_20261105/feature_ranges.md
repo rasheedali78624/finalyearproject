@@ -1,0 +1,22 @@
+| feature | min | max | distinct | values_if_few |
+|---|---|---|---|---|
+| tcp.flags | 2.0 | 25.0 | 8 | 2, 4, 16, 17, 18, 20, 24, 25 |
+| tcp.time_delta | -2e-06 | 60.000823 | 10514 |  |
+| tcp.len | 0.0 | 32768.0 | 773 |  |
+| mqtt.conack.flags | -1.0 | 0.0 | 2 | -1, 0 |
+| mqtt.conack.val | 0.0 | 5.0 | 2 | 0, 5 |
+| mqtt.conflag.cleansess | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.conflag.passwd | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.conflag.uname | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.conflags | -1.0 | 194.0 | 4 | -1, 2, 130, 194 |
+| mqtt.dupflag | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.hdrflags | -1.0 | 224.0 | 14 |  |
+| mqtt.kalive | 0.0 | 65535.0 | 7 | 0, 1, 2, 3, 60, 234, 65535 |
+| mqtt.len | 0.0 | 692.0 | 92 |  |
+| mqtt.msgid | 0.0 | 10000.0 | 9999 |  |
+| mqtt.msgtype | 0.0 | 14.0 | 11 |  |
+| mqtt.proto_len | 0.0 | 4.0 | 2 | 0, 4 |
+| mqtt.protoname | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.qos | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.retain | 0.0 | 1.0 | 2 | 0, 1 |
+| mqtt.ver | 0.0 | 4.0 | 2 | 0, 4 |

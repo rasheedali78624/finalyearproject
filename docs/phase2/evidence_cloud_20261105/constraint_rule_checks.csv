@@ -1,0 +1,13 @@
+rule,applies_to_rows,rows_obeying,obey_pct,basis
+packet type = upper 4 bits of mqtt.hdrflags,206975,206975,100.0,MQTT 3.1.1 §2.2.1
+PUBLISH: low 4 bits of hdrflags = DUP<<3 | QoS<<1 | RETAIN,158524,158524,100.0,MQTT 3.1.1 §3.3.1
+PUBLISH: message ID present (non-zero) only if QoS > 0,158524,158485,99.98,MQTT 3.1.1 §2.3.1
+PUBLISH: DUP = 1 only if QoS > 0,158524,158524,100.0,MQTT 3.1.1 §3.3.1.1
+CONNECT: conflags = uname<<7 | passwd<<6 | cleansess<<1,3282,3282,100.0,MQTT 3.1.1 §3.1.2.3 (will flags are constant 0 in this data)
+CONNECT: password flag = 1 only if username flag = 1,3282,3282,100.0,MQTT 3.1.1 §3.1.2.9
+"CONNECT: protoname = 'MQTT', proto_len = 4, ver = 4",3282,3282,100.0,MQTT 3.1.1 §3.1.2.1-2
+protoname / proto_len / ver / kalive / conflags appear only in CONNECT,327644,327644,100.0,packet structure
+conack.flags / conack.val appear only in CONNACK,327644,327644,100.0,packet structure
+rows with no MQTT header have every MQTT field absent/zero,123951,123951,100.0,packet structure
+MQTT rows: tcp.len >= mqtt.len + 2 (header + length byte),206975,182238,88.05,MQTT 3.1.1 §2.2.3 (min. fixed header)
+MQTT rows: tcp.len == mqtt.len + 2 (exactly one small MQTT packet per segment),206975,124603,60.2,"one packet, remaining length < 128"

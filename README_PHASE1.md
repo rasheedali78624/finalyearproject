@@ -34,6 +34,8 @@ Run single steps on their own:
 python3 src/dedup_analysis.py          # Task 1: duplication and leakage, raw files
 python3 src/feature_space_analysis.py  # Step 2: re-measure on the 20 model features
 python3 src/sensitivity_checks.py      # class weights on/off; Variant A seen/unseen groups
+python3 src/mqtt_only_analysis.py      # MQTT-packets-only population (direction review)
+python3 src/constraint_checks.py       # Phase 2: protocol rules checked against the data
 ```
 
 If XGBoost fails with a `libomp` error: `brew install libomp`.
@@ -88,3 +90,5 @@ and `results/phase1/PHASE1_RESULTS_AUTO.md` with all result tables.
 - `docs/phase1/PHASE1_FINDINGS.md`: model results and decisions (cloud verification run; confirm on Mac)
 - `docs/phase1/cloud_run_20261105/`: tables, figures and logs from the cloud run
 - `docs/phase1/study_guide.html`: offline copy of the study guide (open in a browser)
+- `docs/PROJECT_DIRECTION_REVIEW.md`: what to change after Phase 1 (for Dr. Bryan)
+- `docs/phase2/CONSTRAINT_TABLE.md`: Phase 2 feature constraint table, draft v1

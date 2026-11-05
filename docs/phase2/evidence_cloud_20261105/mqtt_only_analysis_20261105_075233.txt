@@ -1,0 +1,39 @@
+========================================================================
+MQTT-ONLY SUBSET (rows with an MQTT header)
+========================================================================
+population            all rows  MQTT-only
+rows                    330926     206975
+unique_vectors          107129     101615
+rows_in_conflict_pct     34.89       0.06
+error_floor_pct           6.73       0.02
+accuracy_ceiling_pct     93.27      99.98
+bruteforce_rows          14501       2921
+bruteforce_unique         4372       1924
+dos_rows                130223      93317
+dos_unique               90988      90261
+flood_rows                 613        303
+flood_unique               266        235
+legitimate_rows         165463     104746
+legitimate_unique         6023       5887
+malformed_rows           10924       3656
+malformed_unique          4744       2605
+slowite_rows              9202       2032
+slowite_unique            2580        743
+  saved -> results/phase1/tables/mqtt_only_summary.csv (+ .md)
+
+Variant B (de-duplicated, grouped split) built on MQTT-only rows:
+  bruteforce  train   1346  test    578
+  dos         train  63183  test  27078
+  flood       train    164  test     71
+  legitimate  train   4120  test   1767
+  malformed   train   1823  test    782
+  slowite     train    521  test    222
+  RandomForest macro F1 0.9781  accuracy 0.9984  FPR 0.0006
+  XGBoost      macro F1 0.9792  accuracy 0.9982  FPR 0.0006
+  MLP          macro F1 0.8898  accuracy 0.9830  FPR 0.1149
+       model  test_macro_f1  test_accuracy  test_fpr  recall_bruteforce  recall_dos  recall_flood  recall_legitimate  recall_malformed  recall_slowite
+RandomForest         0.9781         0.9984    0.0006             0.9896      1.0000        1.0000             0.9994            0.9642          0.9459
+     XGBoost         0.9792         0.9982    0.0006             0.9913      1.0000        1.0000             0.9994            0.9476          0.9730
+         MLP         0.8898         0.9830    0.1149             0.9844      0.9954        0.9859             0.8851            0.7673          1.0000
+  saved -> results/phase1/tables/mqtt_only_models.csv (+ .md)
+Finished in 65 s

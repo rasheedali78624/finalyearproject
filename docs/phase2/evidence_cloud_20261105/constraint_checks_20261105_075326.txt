@@ -1,0 +1,85 @@
+
+RULE CHECKS
+                                                                          rule  applies_to_rows  rows_obeying  obey_pct                                                        basis
+                                   packet type = upper 4 bits of mqtt.hdrflags           206975        206975    100.00                                            MQTT 3.1.1 §2.2.1
+                    PUBLISH: low 4 bits of hdrflags = DUP<<3 | QoS<<1 | RETAIN           158524        158524    100.00                                            MQTT 3.1.1 §3.3.1
+                        PUBLISH: message ID present (non-zero) only if QoS > 0           158524        158485     99.98                                            MQTT 3.1.1 §2.3.1
+                                              PUBLISH: DUP = 1 only if QoS > 0           158524        158524    100.00                                          MQTT 3.1.1 §3.3.1.1
+                       CONNECT: conflags = uname<<7 | passwd<<6 | cleansess<<1             3282          3282    100.00 MQTT 3.1.1 §3.1.2.3 (will flags are constant 0 in this data)
+                          CONNECT: password flag = 1 only if username flag = 1             3282          3282    100.00                                          MQTT 3.1.1 §3.1.2.9
+                           CONNECT: protoname = 'MQTT', proto_len = 4, ver = 4             3282          3282    100.00                                        MQTT 3.1.1 §3.1.2.1-2
+        protoname / proto_len / ver / kalive / conflags appear only in CONNECT           327644        327644    100.00                                             packet structure
+                              conack.flags / conack.val appear only in CONNACK           327644        327644    100.00                                             packet structure
+                    rows with no MQTT header have every MQTT field absent/zero           123951        123951    100.00                                             packet structure
+                     MQTT rows: tcp.len >= mqtt.len + 2 (header + length byte)           206975        182238     88.05                        MQTT 3.1.1 §2.2.3 (min. fixed header)
+MQTT rows: tcp.len == mqtt.len + 2 (exactly one small MQTT packet per segment)           206975        124603     60.20                           one packet, remaining length < 128
+  saved -> results/phase2/tables/constraint_rule_checks.csv (+ .md)
+
+tcp.len - mqtt.len on MQTT rows (top 10 values)
+ tcp_len_minus_mqtt_len   rows  share_pct
+                      2 124603      60.20
+                      6  10710       5.17
+                      3   3678       1.78
+                     10   2196       1.06
+                   1291   1939       0.94
+                   1290   1800       0.87
+                   1292   1793       0.87
+                   1293   1749       0.85
+                   1289   1746       0.84
+                   1294   1601       0.77
+  saved -> results/phase2/tables/tcp_minus_mqtt_len.csv (+ .md)
+
+FEATURE RANGES
+               feature       min          max  distinct                values_if_few
+             tcp.flags  2.000000    25.000000         8 2, 4, 16, 17, 18, 20, 24, 25
+        tcp.time_delta -0.000002    60.000823     10514                             
+               tcp.len  0.000000 32768.000000       773                             
+     mqtt.conack.flags -1.000000     0.000000         2                        -1, 0
+       mqtt.conack.val  0.000000     5.000000         2                         0, 5
+mqtt.conflag.cleansess  0.000000     1.000000         2                         0, 1
+   mqtt.conflag.passwd  0.000000     1.000000         2                         0, 1
+    mqtt.conflag.uname  0.000000     1.000000         2                         0, 1
+         mqtt.conflags -1.000000   194.000000         4              -1, 2, 130, 194
+          mqtt.dupflag  0.000000     1.000000         2                         0, 1
+         mqtt.hdrflags -1.000000   224.000000        14                             
+           mqtt.kalive  0.000000 65535.000000         7   0, 1, 2, 3, 60, 234, 65535
+              mqtt.len  0.000000   692.000000        92                             
+            mqtt.msgid  0.000000 10000.000000      9999                             
+          mqtt.msgtype  0.000000    14.000000        11                             
+        mqtt.proto_len  0.000000     4.000000         2                         0, 4
+        mqtt.protoname  0.000000     1.000000         2                         0, 1
+              mqtt.qos  0.000000     1.000000         2                         0, 1
+           mqtt.retain  0.000000     1.000000         2                         0, 1
+              mqtt.ver  0.000000     4.000000         2                         0, 4
+  saved -> results/phase2/tables/feature_ranges.csv (+ .md)
+
+PACKET TYPES PER CLASS (rows)
+       packet_type  bruteforce   dos  flood  legitimate  malformed  slowite
+           CONNACK        1430    15      1           0        820     1016
+           CONNECT        1430    15      1           0        820     1016
+        DISCONNECT           2    15      0           0          1        0
+           PINGREQ           0     0      3        1338          0        0
+          PINGRESP           0     0      3        1442          0        0
+            PUBACK           0 38841      0           0         39        0
+           PUBLISH          55 54431    295      101966       1777        0
+            PUBREC           0     0      0           0         39        0
+            SUBACK           2     0      0           0         80        0
+         SUBSCRIBE           2     0      0           0         80        0
+no MQTT (bare TCP)       11580 36906    310       60717       7268     7170
+  saved -> results/phase2/tables/packet_types_per_class.csv (+ .md)
+
+KEEP-ALIVE VALUES IN CONNECT PACKETS, per class
+target       bruteforce  dos  flood  malformed  slowite
+mqtt.kalive                                            
+1                     0    0      0         41        0
+2                     0    0      0         41        0
+3                     0    0      0         41        0
+60                 1430   15      1        656        0
+234                   0    0      0         41        0
+65535                 0    0      0          0     1016
+
+QoS IN PUBLISH PACKETS, per class
+target    bruteforce    dos  flood  legitimate  malformed
+mqtt.qos                                                 
+0                 55      0    295      101966       1777
+1                  0  54431      0           0          0
