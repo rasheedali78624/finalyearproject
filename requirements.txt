@@ -1,0 +1,8 @@
+# Exact versions used for the official Phase 1 run on Rasheed's MacBook
+# (5 Nov 2026, Python 3.14.2) — taken from docs/phase1/mac_run_20261105/phase1_run_20261105_144354.txt
+numpy==2.5.4
+pandas==3.0.6
+scikit-learn==1.9.1
+xgboost==3.4.1
+matplotlib==3.11.2
+joblib==1.6.0
