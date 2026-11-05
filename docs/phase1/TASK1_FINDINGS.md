@@ -27,7 +27,7 @@ vectors are identical.
 | Difference | **+10, all in class `dos`** |
 
 All other classes match exactly. The test share is 30.00–30.02% for every
-class, so the published split is stratified. The 10 extra `dos` rows are small
+class, which is consistent with a stratified split. The 10 extra `dos` rows are small
 but should be mentioned as a property of the published benchmark.
 
 ## 3. Duplication per class (full file)
@@ -69,10 +69,17 @@ but should be mentioned as a property of the published benchmark.
 
 The most common collision is `bruteforce + malformed` (697 vectors).
 
-**What this means:** for these rows, the 33 features hold no information that
-separates the classes. No model, however good, can classify all of them
-correctly. A large part of any reported accuracy on this dataset depends on
-which label each model assigns to the ambiguous vectors.
+**What this means:** for these rows, the 33 features cannot separate the
+classes involved. This does **not** mean 33.45% of rows are unclassifiable.
+The best any model can do for a conflicting vector is predict its most
+frequent label, so only the *minority-label* rows are unavoidable errors.
+For example, a vector seen 1,000× as `legitimate` and 5× as `dos` costs
+only 5 errors.
+
+**Unavoidable error rate (error floor):** *not measured yet.* The
+calculation was added to `src/dedup_analysis.py` after the 5 Nov run; the
+script must be re-run to fill this in. **Do not quote 33.45% as an error
+rate.**
 
 **Not yet verified (hypothesis only):** these rows may be packets with no
 MQTT layer, such as TCP ACKs and handshakes. All their MQTT fields would then
@@ -132,12 +139,13 @@ thing as a present field whose value is 0. Encoding must keep that distinction
    stratified split (`StratifiedGroupKFold` in scikit-learn).
 3. **Framing for the panel (Prof. Yamani's overfitting point):** two thirds of
    the published test set also appears in its training set, and one third of
-   all rows cannot be separated on these features at all. Both facts bear
-   directly on the 97–99% figures reported in the literature.
+   all rows share their exact feature vector with a row of a different class.
+   Both facts bear directly on the 97–99% figures reported in the literature.
 
 ## Still uncertain
 
 - The cause of the label conflicts (hypothesis in §4, not yet tested).
+- The unavoidable error rate caused by the conflicts (needs a re-run, §4).
 - How much duplication, conflict and leakage remain after encoding and after
   dropping `mqtt.msg` (Task 2).
 - Why the split files contain 10 more `dos` rows than the full file.

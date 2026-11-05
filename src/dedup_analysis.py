@@ -216,6 +216,20 @@ def main():
                           "conflict_pct": pct(k, int(m.sum()))})
     conf_df = pd.DataFrame(conf_rows)
     log(conf_df.to_string(index=False))
+    # Unavoidable errors: for every feature vector, the best ANY model can do is
+    # always predict that vector's most frequent label. Every row carrying a
+    # different label is then wrong, whatever the model. Summing those rows
+    # gives the minimum number of errors on this data (the "error floor").
+    # This total does not depend on how ties are broken.
+    label_counts = full.groupby(["_key", label]).size()
+    majority_per_key = label_counts.groupby(level=0).max()
+    rows_per_key = label_counts.groupby(level=0).sum()
+    unavoidable = int((rows_per_key - majority_per_key).sum())
+    log(f"  UNAVOIDABLE errors for any model (minority-label rows): {unavoidable:,} "
+        f"of {len(full):,} = {pct(unavoidable, len(full))}%")
+    log(f"  -> best possible accuracy on these features: "
+        f"{round(100 - pct(unavoidable, len(full)), 2)}%  "
+        f"(a ceiling, measured on all 33 raw columns)")
     # Which label pairs collide?
     if conflict_keys:
         pairs = (full.loc[in_conflict].groupby("_key")[label]
