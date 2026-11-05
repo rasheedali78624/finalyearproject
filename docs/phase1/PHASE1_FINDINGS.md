@@ -1,15 +1,14 @@
 # Phase 1 Findings — Baseline Detection on MQTTset (Objective O1)
 
-**Status: confirmed on Rasheed's MacBook, 5 Nov 2026.** The main results and
-cost figures below are from the **Mac run** (official). The sensitivity checks
-(§3) are from the cloud run on identical copies of the data; they still need
-re-running on the Mac (see §7).
+**Status: confirmed on Rasheed's MacBook, 5 Nov 2026.** Every number below is
+from the **Mac runs** (official). The cloud run on identical copies of the data
+is kept as a cross-check.
 
 | Run | Log | Machine | Settings |
 |---|---|---|---|
 | **Main pipeline (official)** | `mac_run_20261105/phase1_run_20261105_144354.txt` | MacBook Pro, Apple Silicon, 10 cores, macOS 27.0.1 | 5-fold CV × 3 repeats, seed 42; **10.5 min** |
 | Main pipeline (cloud check) | `cloud_run_20261105/logs/phase1_run_20261105_060455.txt` | Linux, 4 cores | Same settings; 28.8 min |
-| Sensitivity checks (cloud) | `cloud_run_20261105/logs/sensitivity_checks_20261105_060638.txt` | Linux, 4 cores | Class weighting on/off; Variant A test-row groups |
+| **Sensitivity checks (official)** | `mac_run_20261105/sensitivity_checks_20261105_145518.txt` | MacBook Pro | Class weighting on/off; Variant A test-row groups; identical to the cloud run |
 
 Libraries on the Mac: Python 3.14.2, numpy 2.5.4, pandas 3.0.6, scikit-learn
 1.9.1, xgboost 3.4.1.
@@ -208,9 +207,6 @@ Figures `importance_RandomForest_variant*.png` and
 
 ## 7. Still uncertain / not measured
 
-- The sensitivity checks (§3a, §3b) have not been re-run on the Mac yet. For
-  Random Forest and XGBoost the main results matched the cloud exactly, so they
-  are expected to match, but that is not yet confirmed.
 - Why the MLP on Variant A differs between machines (a likely explanation is
   given above, not measured).
 - Which MQTTset file and features each cited 97–99% paper used.

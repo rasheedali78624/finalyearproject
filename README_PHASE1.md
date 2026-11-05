@@ -61,7 +61,9 @@ All outputs go to `results/phase1/`:
 - `models/` (saved `.joblib`, not committed)
 - `logs/` (a full timestamped log of every run)
 
-A run also writes `requirements.txt` with the exact package versions it used,
+A run also writes `results/phase1/logs/requirements_this_run.txt` with the exact
+package versions it used (the committed `requirements.txt` pins the official
+Mac run),
 and `results/phase1/PHASE1_RESULTS_AUTO.md` with all result tables.
 
 ## Key design decisions

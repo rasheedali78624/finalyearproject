@@ -16,7 +16,7 @@ Order:
             identical feature vectors in one fold, so CV is leak-free too)
        - fit on the full training set, evaluate ONCE on the held-out test set
        - latency, model size, confusion matrix, feature importance
-  5. Tables, figures, an auto-generated results summary, and requirements.txt
+  5. Tables, figures, an auto-generated results summary, and the library versions
 """
 import argparse
 import platform
@@ -85,8 +85,9 @@ def main():
     log(f"MLP class weighting: {'balanced sample weights' if MLP_SUPPORTS_WEIGHTS else 'NONE (scikit-learn < 1.7)'}")
     log("=" * 72)
 
-    # requirements.txt with the exact versions used in this run
-    req = config.PROJECT_ROOT / "requirements.txt"
+    # Exact versions used in this run, saved next to the logs. (The committed
+    # requirements.txt at the project root is the pinned list from the official run.)
+    req = config.LOGS_DIR / "requirements_this_run.txt"
     req.write_text(f"# Exact versions used by the last run_phase1.py (Python {sys.version.split()[0]})\n"
                    + "".join(f"{k}=={v}\n" for k, v in versions().items() if v != "not installed"))
 
