@@ -67,3 +67,33 @@ def ensure_output_dirs():
     """Create the results folders if they do not exist yet."""
     for d in (TABLES_DIR, FIGURES_DIR, MODELS_DIR, LOGS_DIR):
         d.mkdir(parents=True, exist_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# Step 2: encoding decisions (see data_loader.py for the rules)
+# ---------------------------------------------------------------------------
+# Dropped on purpose, in addition to the 12 constant columns:
+#   mqtt.msg = the message payload. 50,054 distinct values (Task 1), so a model
+#   could memorise payload content; and it is fully attacker-controlled. Dropping
+#   it REMOVES it from the O2 constraint set — this must be stated in the report.
+DROPPED_COLS = ["mqtt.msg"]
+
+# Value used for "field not present in this packet" in hex columns.
+# Hex columns write a plain '0' when the field is absent, and '0x00000000' when
+# it is present with value zero. We keep those apart: absent -> -1.
+ABSENT_VALUE = -1
+
+# ---------------------------------------------------------------------------
+# Models and evaluation
+# ---------------------------------------------------------------------------
+CV_SPLITS = 5
+CV_REPEATS = 3
+VARIANT_B_TEST_FOLDS = 3      # Variant B test = 3 of 10 grouped folds = ~30%
+VARIANT_B_TOTAL_FOLDS = 10
+NORMAL_CLASS = "legitimate"   # used for the false positive rate
+FIG_DPI = 160
+
+# Phase 2 constraint groups as written in the submitted report (brief, H4).
+# Used only to annotate feature-importance plots. Not yet validated.
+MUTABLE_FIELDS = ["tcp.time_delta", "tcp.len", "mqtt.kalive", "mqtt.len"]
+IMMUTABLE_FIELDS = ["mqtt.msgtype", "mqtt.protoname", "mqtt.ver", "mqtt.conflags"]
