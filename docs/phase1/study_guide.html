@@ -1,0 +1,953 @@
+<title>MQTT IDS Study Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a study notebook — sticky chapter list on the left (desktop), one reading column, diagrams set into the text like figures in a textbook. */
+:root{
+  --bg:#F3F5F4;
+  --paper:#FFFFFF;
+  --fg:#1B2421;
+  --muted:#5A6863;
+  --line:#D5DDDA;
+  --accent:#0F6B5C;      /* deep teal: the "network" colour */
+  --accent-soft:#DCEFEA;
+  --mark:#F2C14E;        /* highlighter yellow for key facts */
+  --mark-soft:#FBF0CF;
+  --bad:#B33A3A; --bad-soft:#F6DEDE;
+  --good:#2E7D4F; --good-soft:#DDF0E4;
+  --warn:#9A6400; --warn-soft:#F7EACB;
+  --chart-a:#0F6B5C; --chart-b:#B9D9D1;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121816; --paper:#1A2220; --fg:#E4ECE9; --muted:#9AABA5; --line:#2E3A37;
+    --accent:#5CC4AE; --accent-soft:#183A33; --mark:#E2B33F; --mark-soft:#3A3220;
+    --bad:#E47C7C; --bad-soft:#3C2222; --good:#6CC892; --good-soft:#1C3527;
+    --warn:#E0B055; --warn-soft:#3A2F17; --chart-a:#5CC4AE; --chart-b:#2B4D45;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --paper:#1A2220; --fg:#E4ECE9; --muted:#9AABA5; --line:#2E3A37;
+  --accent:#5CC4AE; --accent-soft:#183A33; --mark:#E2B33F; --mark-soft:#3A3220;
+  --bad:#E47C7C; --bad-soft:#3C2222; --good:#6CC892; --good-soft:#1C3527;
+  --warn:#E0B055; --warn-soft:#3A2F17; --chart-a:#5CC4AE; --chart-b:#2B4D45;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:18px;line-height:1.6;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 64px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:240px minmax(0,1fr);gap:48px}
+@media (max-width:900px){.wrap{grid-template-columns:minmax(0,1fr);gap:0}.toc{display:none}}
+.toc{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-top:40px;max-height:100vh;overflow:auto;font-family:var(--display);font-size:14px}
+.toc p{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:t}
+.toc a{display:flex;gap:10px;color:var(--fg);text-decoration:none;padding:5px 8px;border-radius:6px}
+.toc a:hover,.toc a:focus-visible{background:var(--accent-soft);outline:none}
+.toc a span{color:var(--accent);font-variant-numeric:tabular-nums;min-width:1.4em}
+main{min-width:0;max-width:760px}
+header.hero{padding:48px 0 24px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.eyebrow{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:.04em;margin:0 0 12px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,52px);line-height:1.05;margin:0 0 16px;text-wrap:balance;letter-spacing:-.01em}
+h2{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.15;margin:0 0 6px;text-wrap:balance}
+h3{font-family:var(--display);font-weight:500;font-size:21px;margin:32px 0 6px;text-wrap:balance}
+.lede{font-size:21px;color:var(--muted);margin:0;max-width:62ch}
+section{padding:56px 0 8px;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.chap{font-family:var(--mono);font-size:13px;color:var(--accent);margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 20px;font-style:italic}
+p{margin:0 0 14px;max-width:66ch}
+code,.f{font-family:var(--mono);font-size:.84em;background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+mark{background:var(--mark-soft);color:inherit;padding:0 3px;border-radius:3px;box-shadow:inset 0 -2px 0 var(--mark)}
+strong{font-weight:600}
+ul,ol.steps{padding-left:22px;margin:0 0 16px;max-width:64ch}
+li{margin-bottom:6px}
+
+/* callouts: each type has a job */
+.box{border-radius:10px;padding:16px 20px;margin:20px 0;max-width:66ch}
+.box > :last-child{margin-bottom:0}
+.box .k{font-family:var(--display);font-size:13px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:6px}
+.plain{background:var(--accent-soft)} .plain .k{color:var(--accent)}
+.say{background:var(--paper);border:1px solid var(--line)} .say .k{color:var(--accent)}
+.say p{font-style:italic}
+.careful{background:var(--warn-soft)} .careful .k{color:var(--warn)}
+.analogy{background:var(--mark-soft)} .analogy .k{color:var(--warn)}
+
+figure{margin:24px 0 28px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px}
+figure .scroll{overflow-x:auto}
+figcaption{font-family:var(--display);font-size:14px;color:var(--muted);margin-top:12px;line-height:1.45}
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--display)}
+.s-box{fill:var(--paper);stroke:var(--line);stroke-width:1.5}
+.s-soft{fill:var(--accent-soft);stroke:none}
+.s-acc{fill:var(--accent);stroke:none}
+.s-accline{fill:none;stroke:var(--accent);stroke-width:2}
+.s-line{fill:none;stroke:var(--muted);stroke-width:1.5}
+.s-mark{fill:var(--mark-soft);stroke:var(--mark);stroke-width:1.5}
+.s-bad{fill:var(--bad-soft);stroke:var(--bad);stroke-width:1.5}
+.s-good{fill:var(--good-soft);stroke:var(--good);stroke-width:1.5}
+.t{fill:var(--fg);font-size:14px}
+.tm{fill:var(--muted);font-size:12px}
+.tb{fill:var(--fg);font-size:15px;font-weight:700}
+.ta{fill:var(--accent);font-size:13px;font-weight:700}
+.tw{fill:var(--paper);font-size:13px;font-weight:700}
+.mono{font-family:var(--mono)!important}
+
+table{border-collapse:collapse;width:100%;font-size:15px;font-variant-numeric:tabular-nums}
+.tbl{overflow-x:auto;margin:16px 0 24px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--display);font-weight:500;color:var(--muted);font-size:13px;letter-spacing:.03em}
+td.n,th.n{text-align:right}
+.cm td,.cm th{text-align:center}
+.cm td.hit{background:var(--good-soft)} .cm td.miss{background:var(--bad-soft)}
+
+/* bar charts drawn in HTML so they scale cleanly */
+.bars{display:grid;gap:10px;font-family:var(--display);font-size:14px}
+.bar{display:grid;grid-template-columns:110px minmax(0,1fr) 64px;gap:10px;align-items:center}
+.bar .track{height:22px;background:var(--chart-b);border-radius:4px;position:relative;overflow:hidden}
+.bar .fill{position:absolute;inset:0 auto 0 0;background:var(--chart-a);border-radius:4px 0 0 4px}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.bar .lab{color:var(--fg)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--display);font-size:13px;color:var(--muted);margin-bottom:12px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.stack{display:flex;height:34px;border-radius:6px;overflow:hidden;font-family:var(--display);font-size:12px}
+.stack div{display:flex;align-items:center;justify-content:center;color:var(--paper);font-weight:700;white-space:nowrap;overflow:hidden;min-width:0}
+.stackrow{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:10px;font-family:var(--display);font-size:14px}
+@media (max-width:520px){.bar{grid-template-columns:84px minmax(0,1fr) 54px}.stackrow{grid-template-columns:minmax(0,1fr)}}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px}
+.chip{font-family:var(--mono);font-size:13px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper)}
+.chip.mut{border-color:var(--bad);color:var(--bad)}
+.chip.imm{border-color:var(--good);color:var(--good)}
+.chip.dep{border-color:var(--warn);color:var(--warn)}
+
+.glossary{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px}
+@media (max-width:640px){.glossary{grid-template-columns:minmax(0,1fr)}}
+.glossary dt{font-family:var(--display);font-weight:700;margin-top:14px}
+.glossary dd{margin:2px 0 0;color:var(--fg)}
+
+details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:10px 0;max-width:66ch}
+summary{cursor:pointer;font-family:var(--display);font-weight:500}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+details[open] summary{margin-bottom:8px;color:var(--accent)}
+details p:last-child{margin-bottom:0}
+
+.timeline{display:grid;gap:0;margin:16px 0;border-left:2px solid var(--accent);padding-left:20px;max-width:66ch}
+.timeline div{position:relative;padding-bottom:18px}
+.timeline div::before{content:"";position:absolute;left:-27px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--accent)}
+.timeline div.now::before{background:var(--accent)}
+.timeline b{font-family:var(--display);display:block}
+.timeline span{color:var(--muted);font-size:16px}
+
+.checklist{list-style:none;padding:0}
+.checklist li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.checklist li::before{content:"";flex:0 0 18px;height:18px;margin-top:5px;border:2px solid var(--accent);border-radius:4px}
+a{color:var(--accent)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Chapters">
+  <p>Chapters</p>
+  <ol>
+    <li><a href="#start"><span>0</span>Start here</a></li>
+    <li><a href="#big"><span>1</span>The big idea</a></li>
+    <li><a href="#mqtt"><span>2</span>MQTT in plain words</a></li>
+    <li><a href="#data"><span>3</span>Your dataset</a></li>
+    <li><a href="#ml"><span>4</span>Machine-learning words</a></li>
+    <li><a href="#metrics"><span>5</span>Measuring a detector</a></li>
+    <li><a href="#found"><span>6</span>What you found</a></li>
+    <li><a href="#variants"><span>7</span>Variant A vs B</a></li>
+    <li><a href="#models"><span>8</span>The three models</a></li>
+    <li><a href="#results"><span>9</span>What Phase 1 found</a></li>
+    <li><a href="#next"><span>10</span>Where it goes next</a></li>
+    <li><a href="#talk"><span>11</span>Talking about it</a></li>
+    <li><a href="#quiz"><span>12</span>Test yourself</a></li>
+    <li><a href="#gloss"><span>13</span>Glossary</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="hero">
+  <p class="eyebrow">MCS research project · Phase 1 study guide · updated 5 Nov 2026 with Phase 1 results</p>
+  <h1>Understanding your MQTT intrusion-detection project</h1>
+  <p class="lede">Everything you need to explain your project in your own words: the idea, the data, the terms, and what your Task 1 results actually mean.</p>
+</header>
+
+<!-- 0 -->
+<section id="start">
+  <p class="chap">Chapter 0</p>
+  <h2>Start here</h2>
+  <p class="sub">Read this first. It takes two minutes.</p>
+  <p>You are not behind in the way it feels. Today you ran real code on the real dataset and produced a finding that most published MQTT papers never report: <mark>two thirds of the published test set also sits in the training set</mark>. That is real research output, and you can reproduce it in 10 seconds.</p>
+  <p>Feeling lost is normal when you jump into machine learning from a security background. The fix is to learn the words, because the ideas themselves are simple. This guide breaks each one down.</p>
+  <div class="box plain">
+    <span class="k">How to use this guide</span>
+    <ul>
+      <li><strong>Sitting 1 (about 45 min):</strong> chapters 1–3. The project, MQTT, the dataset.</li>
+      <li><strong>Sitting 2 (about 45 min):</strong> chapters 4–5. The machine-learning words and metrics.</li>
+      <li><strong>Sitting 3 (about 45 min):</strong> chapters 6–8. Your Task 1 findings, the two variants, the models.</li>
+      <li><strong>Sitting 4 (about 45 min):</strong> chapters 9–11. What the models showed and how to explain it. Then do the quiz in chapter 12 without looking back.</li>
+    </ul>
+    <p>Read a section until you could explain it to a friend without the page in front of you, then move on.</p>
+  </div>
+  <div class="box careful">
+    <span class="k">About the numbers in this guide</span>
+    <p>Every number about your dataset comes from your own two runs of <code>src/dedup_analysis.py</code> on 5 Nov. A few are simple arithmetic on those numbers and are marked <em>derived</em>. Numbers in teaching examples are clearly labelled as <strong>pretend numbers</strong>. Never put a pretend number into your report.</p>
+  </div>
+</section>
+
+<!-- 1 -->
+<section id="big">
+  <p class="chap">Chapter 1</p>
+  <h2>The big idea</h2>
+  <p class="sub">Your whole project in one picture.</p>
+
+  <h3>The setting</h3>
+  <p>Smart devices (sensors, cameras, smart plugs) often talk to each other using a messaging protocol called <strong>MQTT</strong>. Attackers can abuse MQTT, for example by flooding it with traffic or guessing passwords. An <strong>intrusion detection system (IDS)</strong> watches the traffic and raises an alarm when something looks like an attack.</p>
+  <p>Modern IDSs often use <strong>machine learning (ML)</strong>: you show a model many examples of normal and attack traffic, and it learns to tell them apart.</p>
+
+  <h3>The claim you are testing</h3>
+  <p>Published papers say ML detectors catch MQTT attacks with <strong>97–99% accuracy</strong>. Your argument is that those tests are too easy, in two ways:</p>
+  <ol class="steps">
+    <li><strong>The attacker in those tests does not know the detector exists.</strong> A real attacker would adjust their traffic to slip past it.</li>
+    <li><strong>(Found today)</strong> The test data overlaps heavily with the training data, so part of the score is memory, not skill.</li>
+  </ol>
+
+  <div class="box analogy">
+    <span class="k">Analogy: the exam</span>
+    <p>A student scores 98% on an exam. Impressive, until you learn two things. First, two thirds of the exam questions were copied word for word from the practice sheet they studied. Second, the examiner never tried rewording a question. Your project asks: what is the student's real score with new questions, and with an examiner who tries to trick them? Then it asks how to train the student to cope.</p>
+  </div>
+
+  <h3>The four objectives</h3>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 210" role="img" aria-label="Project roadmap: O1 baseline (you are here), O2 attacks, O3 defence, O4 trade-offs">
+      <g>
+        <rect class="s-soft" x="10" y="40" width="160" height="120" rx="10"/>
+        <rect class="s-accline" x="10" y="40" width="160" height="120" rx="10"/>
+        <text class="ta" x="24" y="66">O1 · PHASE 1</text>
+        <text class="tb" x="24" y="92">Baseline</text>
+        <text class="t" x="24" y="114">Train 3 detectors,</text>
+        <text class="t" x="24" y="132">measure how well</text>
+        <text class="t" x="24" y="150">they work</text>
+      </g>
+      <g>
+        <rect class="s-box" x="190" y="40" width="160" height="120" rx="10"/>
+        <text class="tm" x="204" y="66">O2 · PHASE 2</text>
+        <text class="tb" x="204" y="92">Attack</text>
+        <text class="t" x="204" y="114">Tweak attack traffic</text>
+        <text class="t" x="204" y="132">(still valid MQTT)</text>
+        <text class="t" x="204" y="150">to fool them</text>
+      </g>
+      <g>
+        <rect class="s-box" x="370" y="40" width="160" height="120" rx="10"/>
+        <text class="tm" x="384" y="66">O3 · PHASE 3</text>
+        <text class="tb" x="384" y="92">Defend</text>
+        <text class="t" x="384" y="114">Make detectors</text>
+        <text class="t" x="384" y="132">robust, then attack</text>
+        <text class="t" x="384" y="150">them again</text>
+      </g>
+      <g>
+        <rect class="s-box" x="550" y="40" width="160" height="120" rx="10"/>
+        <text class="tm" x="564" y="66">O4 · PHASE 4</text>
+        <text class="tb" x="564" y="92">Trade-offs</text>
+        <text class="t" x="564" y="114">Robustness vs</text>
+        <text class="t" x="564" y="132">accuracy vs speed</text>
+        <text class="t" x="564" y="150">and size</text>
+      </g>
+      <path class="s-line" d="M170 100 H186 M350 100 H366 M530 100 H546"/>
+      <path class="s-line" d="M180 95 L186 100 L180 105 M360 95 L366 100 L360 105 M540 95 L546 100 L540 105"/>
+      <rect class="s-acc" x="30" y="176" width="124" height="24" rx="12"/>
+      <text class="tw" x="44" y="193">YOU ARE HERE</text>
+      <text class="tm" x="10" y="24">Each phase builds on the one before. Phase 1 makes the detectors that Phase 2 attacks.</text>
+    </svg>
+    </div>
+    <figcaption>The four research objectives from your approved report. Phase 1 covers O1 only: build and measure the detectors honestly.</figcaption>
+  </figure>
+  <p>Phase 1 matters because every later phase compares against it. If the baseline is inflated, the attack and defence results will be measured against a false starting point.</p>
+</section>
+
+<!-- 2 -->
+<section id="mqtt">
+  <p class="chap">Chapter 2</p>
+  <h2>MQTT in plain words</h2>
+  <p class="sub">How the devices talk, and what the dataset columns mean.</p>
+
+  <h3>Publish and subscribe</h3>
+  <p>In MQTT, devices never talk to each other directly. Everything goes through a central server called the <strong>broker</strong>. (In Phase 2 you will use a real broker called Mosquitto.)</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 250" role="img" aria-label="MQTT publish-subscribe: sensors publish to a broker on topics, apps subscribe and receive">
+      <rect class="s-box" x="20" y="30" width="170" height="54" rx="8"/>
+      <text class="tb" x="36" y="54">Temperature sensor</text>
+      <text class="tm" x="36" y="73">publishes "24.5"</text>
+      <rect class="s-box" x="20" y="150" width="170" height="54" rx="8"/>
+      <text class="tb" x="36" y="174">Door sensor</text>
+      <text class="tm" x="36" y="193">publishes "open"</text>
+
+      <rect class="s-soft" x="280" y="70" width="160" height="96" rx="12"/>
+      <rect class="s-accline" x="280" y="70" width="160" height="96" rx="12"/>
+      <text class="tb" x="330" y="108">BROKER</text>
+      <text class="tm" x="300" y="130">receives every message,</text>
+      <text class="tm" x="300" y="146">forwards to subscribers</text>
+
+      <rect class="s-box" x="530" y="30" width="170" height="54" rx="8"/>
+      <text class="tb" x="546" y="54">Phone app</text>
+      <text class="tm" x="546" y="73">subscribed to home/temp</text>
+      <rect class="s-box" x="530" y="150" width="170" height="54" rx="8"/>
+      <text class="tb" x="546" y="174">Alarm system</text>
+      <text class="tm" x="546" y="193">subscribed to home/door</text>
+
+      <path class="s-accline" d="M190 57 C235 57 240 100 278 104"/>
+      <path class="s-accline" d="M190 177 C235 177 240 140 278 134"/>
+      <path class="s-accline" d="M440 104 C480 100 485 57 528 57"/>
+      <path class="s-accline" d="M440 134 C480 140 485 177 528 177"/>
+      <text class="ta mono" x="196" y="44">home/temp</text>
+      <text class="ta mono" x="196" y="224">home/door</text>
+      <text class="tm" x="250" y="240">An IDS sits beside the broker and watches every packet.</text>
+    </svg>
+    </div>
+    <figcaption>A sensor <strong>publishes</strong> a message on a <strong>topic</strong> (like a channel name). Anyone who <strong>subscribed</strong> to that topic gets it from the broker. Because everything goes through the broker, attacking the broker hurts every device.</figcaption>
+  </figure>
+
+  <h3>Packet types you will see</h3>
+  <p>MQTT communication is made of small messages called <strong>packets</strong>. Each has a type:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Packet</th><th>What it does</th><th>Type number</th></tr></thead>
+    <tbody>
+      <tr><td><code>CONNECT</code></td><td>"Hello, I'm device X, here is my username and password"</td><td class="n">1</td></tr>
+      <tr><td><code>CONNACK</code></td><td>Broker's reply: accepted or refused</td><td class="n">2</td></tr>
+      <tr><td><code>PUBLISH</code></td><td>"Here is a message for topic Y"</td><td class="n">3</td></tr>
+      <tr><td><code>PUBACK</code></td><td>"Got your message"</td><td class="n">4</td></tr>
+      <tr><td><code>SUBSCRIBE</code></td><td>"Send me everything on topic Y"</td><td class="n">8</td></tr>
+      <tr><td><code>PINGREQ</code></td><td>"I'm still alive" (keep-alive)</td><td class="n">12</td></tr>
+      <tr><td><code>DISCONNECT</code></td><td>"Goodbye"</td><td class="n">14</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>MQTT travels inside TCP</h3>
+  <p>MQTT messages are carried by <strong>TCP</strong>, the standard internet delivery layer. TCP also sends its own packets that carry no MQTT content at all, such as acknowledgements ("got it") and connection set-up. Remember this; it matters in chapter 6.</p>
+
+  <h3>The columns in your dataset, decoded</h3>
+  <p>Each column is one field read from a packet. You will drop 12 of them because they never change. These are the ones that matter:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Column</th><th>Plain meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>tcp.flags</code></td><td>TCP control bits, written in hex. <code>0x00000010</code> = ACK, <code>0x00000018</code> = PSH+ACK (data being sent), <code>0x00000011</code> = FIN+ACK (closing).</td></tr>
+      <tr><td><code>tcp.time_delta</code></td><td>Seconds since the previous packet in the same connection. Captures rhythm: floods are fast, slow attacks are slow.</td></tr>
+      <tr><td><code>tcp.len</code></td><td>How many bytes of data the TCP packet carries.</td></tr>
+      <tr><td><code>mqtt.hdrflags</code></td><td>The first byte of an MQTT packet. The first hex digit is the packet type: <code>0x30</code> = PUBLISH (3), <code>0x40</code> = PUBACK (4).</td></tr>
+      <tr><td><code>mqtt.msgtype</code></td><td>The packet type as a number (see table above).</td></tr>
+      <tr><td><code>mqtt.len</code></td><td>Length of the MQTT message in bytes.</td></tr>
+      <tr><td><code>mqtt.msg</code></td><td>The message content itself (the payload). Has 50,054 different values in your data.</td></tr>
+      <tr><td><code>mqtt.kalive</code></td><td>Keep-alive: how many seconds the device promises to stay quiet at most before pinging.</td></tr>
+      <tr><td><code>mqtt.conflags</code></td><td>CONNECT options in hex. <code>0x00000002</code> = clean session. <code>0x000000c2</code> = username + password + clean session.</td></tr>
+      <tr><td><code>mqtt.conflag.uname</code>, <code>.passwd</code>, <code>.cleansess</code></td><td>The same CONNECT options as separate yes/no columns.</td></tr>
+      <tr><td><code>mqtt.conack.val</code>, <code>mqtt.conack.flags</code></td><td>The broker's answer to CONNECT (accepted or refused, and why).</td></tr>
+      <tr><td><code>mqtt.qos</code>, <code>mqtt.retain</code>, <code>mqtt.dupflag</code></td><td>Delivery options on PUBLISH: quality-of-service level, "keep this message for new subscribers", "this is a resend".</td></tr>
+      <tr><td><code>mqtt.msgid</code></td><td>Message ID number used to match a message with its acknowledgement.</td></tr>
+      <tr><td><code>mqtt.protoname</code>, <code>mqtt.proto_len</code>, <code>mqtt.ver</code></td><td>In CONNECT: protocol name ("MQTT"), its length, and the version.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box plain">
+    <span class="k">Why so many zeros</span>
+    <p>A PUBLISH packet has no CONNECT options, and a plain TCP acknowledgement has no MQTT fields at all. Whenever a field does not exist in a packet, the dataset writes <code>0</code>. So <code>0</code> often means "not there", not "the value zero". That is why your Task 1 output showed both <code>0</code> and <code>0x00000000</code> in the same column. Step 2 will keep those two meanings separate.</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="data">
+  <p class="chap">Chapter 3</p>
+  <h2>Your dataset: MQTTset</h2>
+  <p class="sub">What one row is, and the six classes.</p>
+
+  <h3>One row = one packet</h3>
+  <p>Your main file, <code>mqttdataset_reduced.csv</code>, has <strong>330,926 rows</strong> and <strong>34 columns</strong>. Each row describes one network packet. 33 columns are <strong>features</strong> (facts about the packet) and 1 column, <code>target</code>, is the <strong>label</strong> (what kind of traffic it is).</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 150" role="img" aria-label="One row of the dataset: 33 feature columns describing a packet, then the label column target">
+      <rect class="s-box" x="10" y="40" width="96" height="44" rx="4"/><text class="t mono" x="20" y="67">tcp.flags</text>
+      <rect class="s-box" x="110" y="40" width="96" height="44" rx="4"/><text class="t mono" x="120" y="67">tcp.len</text>
+      <rect class="s-box" x="210" y="40" width="110" height="44" rx="4"/><text class="t mono" x="218" y="67">mqtt.msgtype</text>
+      <rect class="s-box" x="324" y="40" width="96" height="44" rx="4"/><text class="t mono" x="334" y="67">mqtt.qos</text>
+      <rect class="s-box" x="424" y="40" width="130" height="44" rx="4"/><text class="t" x="460" y="67">… 29 more</text>
+      <rect class="s-mark" x="580" y="40" width="130" height="44" rx="4"/><text class="tb mono" x="606" y="67">target</text>
+      <path class="s-line" d="M10 102 H554 M10 96 V108 M554 96 V108"/>
+      <text class="t" x="180" y="128">33 FEATURES: what the packet looks like</text>
+      <path class="s-line" d="M580 102 H710 M580 96 V108 M710 96 V108"/>
+      <text class="t" x="584" y="128">LABEL: what it is</text>
+      <text class="tm" x="10" y="24">The model sees the features and must guess the label.</text>
+    </svg>
+    </div>
+    <figcaption>"Labelled" means every row already has the correct answer in <code>target</code>. That is what lets a model learn. (Prof. Yamani asked whether the data was labelled: <strong>yes</strong>.)</figcaption>
+  </figure>
+
+  <h3>The six classes</h3>
+  <p>The label is <strong>multi-class</strong>: one normal class and five attack types. In plain terms:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Class</th><th>Plain meaning</th><th class="n">Rows</th><th class="n">Share</th></tr></thead>
+    <tbody>
+      <tr><td><code>legitimate</code></td><td>Normal traffic from well-behaved devices</td><td class="n">165,463</td><td class="n">50.00%</td></tr>
+      <tr><td><code>dos</code></td><td>Denial of service: overwhelm the broker so real devices cannot be served</td><td class="n">130,223</td><td class="n">39.35%</td></tr>
+      <tr><td><code>bruteforce</code></td><td>Guessing usernames and passwords over and over</td><td class="n">14,501</td><td class="n">4.38%</td></tr>
+      <tr><td><code>malformed</code></td><td>Sending broken or invalid packets to crash or confuse the broker</td><td class="n">10,924</td><td class="n">3.30%</td></tr>
+      <tr><td><code>slowite</code></td><td>A slow denial of service: open many connections and keep them barely alive, so the broker runs out of slots</td><td class="n">9,202</td><td class="n">2.78%</td></tr>
+      <tr><td><code>flood</code></td><td>A flooding attack with heavy MQTT messages</td><td class="n">613</td><td class="n">0.19%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="box careful">
+    <span class="k">Check before you cite</span>
+    <p>These descriptions are plain-language summaries. Before writing attack definitions into your report, open the original MQTTset paper and use its own descriptions, especially for <code>dos</code> versus <code>flood</code>, which are easy to mix up. Cite only what you have read yourself.</p>
+  </div>
+
+  <h3>Imbalance</h3>
+  <p>The biggest class (<code>legitimate</code>, 165,463) is about <strong>270 times</strong> bigger than the smallest (<code>flood</code>, 613). That is called <strong>class imbalance</strong>. It causes a trap, explained in chapter 5.</p>
+  <figure>
+    <div class="legend"><span><i style="background:var(--chart-a)"></i>share of all rows</span></div>
+    <div class="bars">
+      <div class="bar"><span class="lab">legitimate</span><div class="track"><div class="fill" style="width:50%"></div></div><span class="v">50.00%</span></div>
+      <div class="bar"><span class="lab">dos</span><div class="track"><div class="fill" style="width:39.35%"></div></div><span class="v">39.35%</span></div>
+      <div class="bar"><span class="lab">bruteforce</span><div class="track"><div class="fill" style="width:4.38%"></div></div><span class="v">4.38%</span></div>
+      <div class="bar"><span class="lab">malformed</span><div class="track"><div class="fill" style="width:3.30%"></div></div><span class="v">3.30%</span></div>
+      <div class="bar"><span class="lab">slowite</span><div class="track"><div class="fill" style="width:2.78%"></div></div><span class="v">2.78%</span></div>
+      <div class="bar"><span class="lab">flood</span><div class="track"><div class="fill" style="width:0.19%"></div></div><span class="v">0.19%</span></div>
+    </div>
+    <figcaption>Class shares in the full file (from your 16 Oct exploration, confirmed by the 5 Nov runs). <code>flood</code> is so small its bar is almost invisible.</figcaption>
+  </figure>
+
+  <h3>The files</h3>
+  <ul>
+    <li><code>mqttdataset_reduced.csv</code>: the full file (330,926 rows).</li>
+    <li><code>train70_reduced.csv</code> (231,646 rows) and <code>test30_reduced.csv</code> (99,290 rows): the authors' own 70/30 split. Together they have 330,936 rows, which is <strong>10 more</strong> than the full file, all in <code>dos</code>. Nobody knows why yet.</li>
+    <li><strong>12 columns never change</strong> (always the same value), so they carry no information. After dropping them you have <strong>21 usable features</strong>.</li>
+  </ul>
+</section>
+
+<!-- 4 -->
+<section id="ml">
+  <p class="chap">Chapter 4</p>
+  <h2>Machine-learning words, broken down</h2>
+  <p class="sub">The vocabulary you will be asked about.</p>
+
+  <h3>Training and testing</h3>
+  <p>You split the data into two piles:</p>
+  <ul>
+    <li><strong>Training set:</strong> the model studies these rows, with the answers.</li>
+    <li><strong>Test set:</strong> rows the model has never seen. You hide the answers, ask the model to guess, then compare. This tells you how it will do on new traffic.</li>
+  </ul>
+  <p>The test only means something if the test rows are truly new. If the same rows are in both piles, the model can simply remember the answers. That is the core of your Task 1 finding.</p>
+
+  <h3>Generalising vs memorising</h3>
+  <div class="box analogy">
+    <span class="k">Analogy</span>
+    <p><strong>Memorising</strong> is learning that "question 7's answer is B". <strong>Generalising</strong> is understanding why, so you can answer a question you have never seen. We want detectors that generalise, because real attack traffic will never be an exact copy of the training data.</p>
+  </div>
+
+  <h3>Overfitting</h3>
+  <p><strong>Overfitting</strong> is when a model learns the training data too closely, including its quirks and noise, and then does worse on new data. Prof. Yamani's strongest point was that the published 97–99% might be partly overfitting. Your leakage finding is evidence for a closely related problem: when test rows are copies of training rows, an overfitted model is never caught, because the test contains the same quirks it memorised.</p>
+
+  <h3>Cross-validation</h3>
+  <p>One train/test split can be lucky or unlucky. <strong>Cross-validation</strong> repeats the test several times on different slices of the training data and averages the results.</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 230" role="img" aria-label="5-fold cross-validation: training data cut into 5 parts, each round one part is held out for checking">
+      <text class="tm" x="10" y="20">Training data cut into 5 equal parts ("folds"). Each round, one fold is held back for checking.</text>
+      <g>
+        <text class="t" x="10" y="56">Round 1</text>
+        <rect class="s-mark" x="90" y="40" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="212" y="40" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="334" y="40" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="456" y="40" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="578" y="40" width="118" height="24" rx="3"/>
+      </g>
+      <g>
+        <text class="t" x="10" y="90">Round 2</text>
+        <rect class="s-soft" x="90" y="74" width="118" height="24" rx="3"/>
+        <rect class="s-mark" x="212" y="74" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="334" y="74" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="456" y="74" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="578" y="74" width="118" height="24" rx="3"/>
+      </g>
+      <g>
+        <text class="t" x="10" y="124">Round 3</text>
+        <rect class="s-soft" x="90" y="108" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="212" y="108" width="118" height="24" rx="3"/>
+        <rect class="s-mark" x="334" y="108" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="456" y="108" width="118" height="24" rx="3"/>
+        <rect class="s-soft" x="578" y="108" width="118" height="24" rx="3"/>
+      </g>
+      <text class="t" x="10" y="156">… 4, 5</text>
+      <rect class="s-soft" x="90" y="180" width="22" height="16" rx="3"/><text class="t" x="120" y="193">used to train</text>
+      <rect class="s-mark" x="250" y="180" width="22" height="16" rx="3"/><text class="t" x="280" y="193">used to check</text>
+      <text class="tm" x="10" y="222">"Repeated" = shuffle and do all 5 rounds again. 5 folds × 3 repeats = 15 scores → report mean ± standard deviation.</text>
+    </svg>
+    </div>
+    <figcaption>Your plan uses <code>RepeatedStratifiedKFold(n_splits=5, n_repeats=3)</code>. <strong>Stratified</strong> means every fold keeps the same class mix as the whole set, so <code>flood</code> rows appear in every fold.</figcaption>
+  </figure>
+  <p><strong>Mean ± standard deviation</strong>, for example "0.91 ± 0.02" (pretend numbers): the mean is the average score over the 15 rounds; the standard deviation says how much it wobbles. A small wobble means the result is stable. The final <strong>test set</strong> is used only once, at the very end, never for choosing settings.</p>
+
+  <h3>Random seed</h3>
+  <p>Shuffling and model training involve randomness. A <strong>seed</strong> (you use <code>42</code>) fixes that randomness, so running the code again gives exactly the same numbers. Your two runs today gave identical results; that is reproducibility, which the panel asked for.</p>
+</section>
+
+<!-- 5 -->
+<section id="metrics">
+  <p class="chap">Chapter 5</p>
+  <h2>Measuring a detector</h2>
+  <p class="sub">Why accuracy lies, and what to report instead.</p>
+
+  <h3>The accuracy trap</h3>
+  <p><strong>Accuracy</strong> = how many guesses were right out of all guesses. It sounds fine, but with imbalanced data it hides failures.</p>
+  <div class="box plain">
+    <span class="k">On your real data (derived)</span>
+    <p>A "detector" that says <code>legitimate</code> for every single packet would score <mark>50.00% accuracy</mark> while catching <strong>zero</strong> attacks. And a detector that never catches a single <code>flood</code> packet loses only 0.19% accuracy, because <code>flood</code> is so rare. Accuracy cannot see rare classes.</p>
+  </div>
+
+  <h3>The confusion matrix</h3>
+  <p>A table of what the model guessed against what the truth was. Pretend example, 100 packets, three classes:</p>
+  <div class="tbl"><table class="cm">
+    <thead><tr><th>Truth ↓ / Guess →</th><th>legitimate</th><th>dos</th><th>flood</th><th class="n">Total</th></tr></thead>
+    <tbody>
+      <tr><th>legitimate</th><td class="hit">88</td><td class="miss">2</td><td>0</td><td class="n">90</td></tr>
+      <tr><th>dos</th><td class="miss">2</td><td class="hit">6</td><td>0</td><td class="n">8</td></tr>
+      <tr><th>flood</th><td class="miss">2</td><td>0</td><td class="hit">0</td><td class="n">2</td></tr>
+    </tbody>
+  </table></div>
+  <p>Green diagonal = correct. Everything else is a mistake. Accuracy here is (88 + 6 + 0) / 100 = <strong>94%</strong>, which looks great, yet <strong>every flood packet was missed</strong>.</p>
+
+  <h3>Precision and recall, one class at a time</h3>
+  <dl class="glossary">
+    <div><dt>Recall (detection rate)</dt><dd>Of all the real <em>X</em> packets, how many did we catch?<br>dos: 6 of 8 = <strong>75%</strong>. flood: 0 of 2 = <strong>0%</strong>.</dd></div>
+    <div><dt>Precision</dt><dd>When we shouted "<em>X</em>!", how often were we right?<br>dos: 6 right of 8 shouts = <strong>75%</strong>.</dd></div>
+    <div><dt>F1 score</dt><dd>One number that balances precision and recall. High only if both are high. dos F1 = 75%.</dd></div>
+    <div><dt>False positive rate (FPR)</dt><dd>Of the normal packets, how many did we wrongly call an attack? 2 of 90 = 2.2%. Too many false alarms and operators switch the detector off.</dd></div>
+  </dl>
+  <div class="box analogy">
+    <span class="k">Analogy: airport security</span>
+    <p><strong>Recall</strong>: of all the passengers carrying a knife, how many were stopped? <strong>Precision</strong>: of all the passengers stopped, how many actually had a knife? Stopping everyone gives perfect recall and terrible precision. Stopping nobody gives zero false alarms and catches nothing.</p>
+  </div>
+
+  <h3>Macro F1: your headline number</h3>
+  <p><strong>Macro F1</strong> = work out F1 for each class separately, then take the plain average. Every class counts equally, so a missed rare class drags it down hard.</p>
+  <p>In the pretend example: legitimate F1 96.7%, dos 75.0%, flood 0%. Macro F1 = <strong>57.2%</strong>, far below the 94% accuracy. That gap is exactly why you report macro F1.</p>
+  <p>On your real data (derived), the "always say legitimate" detector has 50.00% accuracy but a macro F1 of only about <strong>11%</strong>. It is useless, and macro F1 shows it.</p>
+  <p><strong>Weighted F1</strong> averages the per-class F1 scores weighted by class size. It behaves more like accuracy, so you report it as secondary.</p>
+
+  <h3>Cost metrics (needed for O4)</h3>
+  <ul>
+    <li><strong>Inference latency:</strong> milliseconds the model needs to judge one packet. A small IoT gateway has little CPU.</li>
+    <li><strong>Model size:</strong> how big the saved model file is on disk.</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section id="found">
+  <p class="chap">Chapter 6</p>
+  <h2>What you found in Task 1</h2>
+  <p class="sub">Your real results, explained one at a time.</p>
+
+  <h3>Finding 1. Most rows are duplicates</h3>
+  <p>A <strong>duplicate</strong> is a row whose 33 feature values are exactly the same as another row's. <mark>209,499 rows (63.31%)</mark> are exact duplicates of another row, label included.</p>
+  <div class="box plain">
+    <span class="k">Why duplicates exist (you must be able to explain this)</span>
+    <p>This is packet-level data. Real traffic is repetitive: a sensor sends the same-shaped message every few seconds; keep-alive pings are identical; an attack tool fires the same packet thousands of times. <strong>So the duplicates are not a mistake in the dataset.</strong> The problem comes later, when the rows are split randomly into train and test.</p>
+  </div>
+  <figure>
+    <div class="legend"><span><i style="background:var(--chart-a)"></i>duplicate share of the class</span><span><i style="background:var(--chart-b)"></i>unique share</span></div>
+    <div class="bars">
+      <div class="bar"><span class="lab">legitimate</span><div class="track"><div class="fill" style="width:88.90%"></div></div><span class="v">88.90%</span></div>
+      <div class="bar"><span class="lab">slowite</span><div class="track"><div class="fill" style="width:71.96%"></div></div><span class="v">71.96%</span></div>
+      <div class="bar"><span class="lab">bruteforce</span><div class="track"><div class="fill" style="width:69.85%"></div></div><span class="v">69.85%</span></div>
+      <div class="bar"><span class="lab">malformed</span><div class="track"><div class="fill" style="width:56.56%"></div></div><span class="v">56.56%</span></div>
+      <div class="bar"><span class="lab">flood</span><div class="track"><div class="fill" style="width:45.84%"></div></div><span class="v">45.84%</span></div>
+      <div class="bar"><span class="lab">dos</span><div class="track"><div class="fill" style="width:30.10%"></div></div><span class="v">30.10%</span></div>
+    </div>
+    <figcaption>Duplicate percentage within each class (feature columns only). <code>legitimate</code>: 165,463 rows but only 18,374 unique. <code>flood</code>: 613 rows, 332 unique, which is still enough to model (above the 100 warning line).</figcaption>
+  </figure>
+  <p>If you keep only unique rows, the class mix changes completely:</p>
+  <figure>
+    <div class="stackrow"><span>All rows</span>
+      <div class="stack" role="img" aria-label="All rows: legitimate 50%, dos 39%, others 11%">
+        <div style="flex:50;background:var(--chart-a)">legit 50%</div>
+        <div style="flex:39.35;background:var(--muted)">dos 39%</div>
+        <div style="flex:10.65;background:var(--warn)">other</div>
+      </div></div>
+    <div class="stackrow"><span>Unique rows</span>
+      <div class="stack" role="img" aria-label="Unique rows: legitimate 15%, dos 75%, others 10%">
+        <div style="flex:15.13;background:var(--chart-a)">15%</div>
+        <div style="flex:74.96;background:var(--muted)">dos 75%</div>
+        <div style="flex:9.91;background:var(--warn)">other</div>
+      </div></div>
+    <figcaption>Derived: unique rows per class out of 121,427. Normal traffic is very repetitive, so it shrinks most. "Other" = bruteforce, malformed, slowite, flood together.</figcaption>
+  </figure>
+
+  <h3>Finding 2. Two thirds of the test set is also in the training set</h3>
+  <p>This is <strong>leakage</strong>: information from the test set has leaked into training. Comparing the full published test file with the full training file:</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 200" role="img" aria-label="Of 99,290 test rows, 66,432 (66.91%) have an identical copy in the training set">
+      <text class="tb" x="10" y="24">Published test set: 99,290 rows</text>
+      <rect class="s-bad" x="10" y="40" width="467" height="64" rx="6"/>
+      <rect class="s-good" x="477" y="40" width="233" height="64" rx="6"/>
+      <text class="tb" x="26" y="68">66,432 rows (66.91%)</text>
+      <text class="t" x="26" y="90">an identical copy is in the training set</text>
+      <text class="tb" x="490" y="68">32,858 rows</text>
+      <text class="t" x="490" y="90">truly new</text>
+      <text class="t" x="10" y="140">For the red part, the model can get the answer right by remembering it.</text>
+      <text class="t" x="10" y="162">Of those 66,432, 66,054 have the same label in training too.</text>
+      <text class="tm" x="10" y="190">The old 22.6% estimate came from a sampling shortcut and was wrong.</text>
+    </svg>
+    </div>
+    <figcaption>Bar widths to scale. 32,858 = 99,290 − 66,432 (derived).</figcaption>
+  </figure>
+  <figure>
+    <div class="legend"><span><i style="background:var(--chart-a)"></i>% of that class's test rows also found in training</span></div>
+    <div class="bars">
+      <div class="bar"><span class="lab">legitimate</span><div class="track"><div class="fill" style="width:93.39%"></div></div><span class="v">93.39%</span></div>
+      <div class="bar"><span class="lab">bruteforce</span><div class="track"><div class="fill" style="width:78.42%"></div></div><span class="v">78.42%</span></div>
+      <div class="bar"><span class="lab">slowite</span><div class="track"><div class="fill" style="width:74.57%"></div></div><span class="v">74.57%</span></div>
+      <div class="bar"><span class="lab">malformed</span><div class="track"><div class="fill" style="width:71.87%"></div></div><span class="v">71.87%</span></div>
+      <div class="bar"><span class="lab">flood</span><div class="track"><div class="fill" style="width:50.54%"></div></div><span class="v">50.54%</span></div>
+      <div class="bar"><span class="lab">dos</span><div class="track"><div class="fill" style="width:31.10%"></div></div><span class="v">31.10%</span></div>
+    </div>
+    <figcaption>Leakage per class in the published split. 93 of every 100 normal test packets were already seen in training.</figcaption>
+  </figure>
+
+  <h3>Finding 3. Some identical packets have different labels</h3>
+  <p>A <strong>label conflict</strong> is when two rows have exactly the same features but different labels.</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 160" role="img" aria-label="Two packets with identical features, one labelled bruteforce and one labelled malformed">
+      <rect class="s-box" x="10" y="20" width="300" height="56" rx="6"/>
+      <text class="t mono" x="24" y="44">features: [ A, B, C, … ]</text>
+      <rect class="s-mark" x="214" y="34" width="86" height="28" rx="4"/><text class="t" x="222" y="53">bruteforce</text>
+      <rect class="s-box" x="10" y="90" width="300" height="56" rx="6"/>
+      <text class="t mono" x="24" y="114">features: [ A, B, C, … ]</text>
+      <rect class="s-mark" x="214" y="104" width="86" height="28" rx="4"/><text class="t" x="222" y="123">malformed</text>
+      <text class="tb" x="340" y="56">Same features, different answers.</text>
+      <text class="t" x="340" y="82">The model sees only the features,</text>
+      <text class="t" x="340" y="102">so it must give both rows the same guess.</text>
+      <text class="t" x="340" y="122">At least one of them will be wrong,</text>
+      <text class="t" x="340" y="142">no matter how clever the model is.</text>
+    </svg>
+    </div>
+    <figcaption>The most common clash in your data: <code>bruteforce</code> + <code>malformed</code>, in 697 feature vectors.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>1,129</strong> distinct feature vectors carry more than one label.</li>
+    <li>They cover <strong>110,711 rows (33.45%)</strong>.</li>
+    <li><code>slowite</code> has no conflicts at all.</li>
+  </ul>
+  <div class="box careful">
+    <span class="k">Do not say "a third of the data can't be classified"</span>
+    <p>That is wrong. Pretend example: a feature vector appears 1,000 times as <code>legitimate</code> and 5 times as <code>dos</code>. A model that always answers <code>legitimate</code> for it gets 1,000 right and only 5 wrong. Only the minority rows are lost.</p>
+  </div>
+
+  <h3>Finding 4. The ceiling: 94.38%</h3>
+  <p>Counting only those unavoidable minority rows across the whole file gives <mark>18,594 rows (5.62%)</mark> that no model can get right with these features. So the <strong>best possible accuracy is 94.38%</strong> on this file with these 33 features.</p>
+  <div class="box careful">
+    <span class="k">Three limits on the 94.38% figure</span>
+    <ol class="steps">
+      <li>It covers the whole file. A specific test split could have a slightly different ceiling; not measured.</li>
+      <li>It applies to <code>mqttdataset_reduced.csv</code> with these 33 columns. Papers that report 97–99% may have used a different MQTTset file or different features. You must check what each paper used before comparing.</li>
+      <li>It changes in Step 2. On the final 20 features it is <strong>93.27%</strong> (chapter 9).</li>
+    </ol>
+  </div>
+  <p><strong>Untested guess about the cause:</strong> many conflicting rows may be plain TCP packets (acknowledgements, connection set-up) with no MQTT content, so all MQTT fields read <code>0</code>. Such packets look the same in every capture, but each one gets the label of the capture file it came from. Step 2 will test this.</p>
+</section>
+
+<!-- 7 -->
+<section id="variants">
+  <p class="chap">Chapter 7</p>
+  <h2>Variant A vs Variant B</h2>
+  <p class="sub">The experiment that turns your finding into a result.</p>
+  <p>You will train every model twice, on two versions of the data, and compare.</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 300" role="img" aria-label="Variant A: random split puts copies of the same packet in both train and test. Variant B: copies are grouped so each packet shape is only on one side">
+      <text class="tb" x="10" y="22">Variant A · as published (random split by row)</text>
+      <rect class="s-box" x="10" y="36" width="330" height="96" rx="8"/><text class="tm" x="22" y="54">TRAIN</text>
+      <rect class="s-box" x="380" y="36" width="330" height="96" rx="8"/><text class="tm" x="392" y="54">TEST</text>
+      <g class="dots">
+        <circle cx="40" cy="90" r="12" fill="var(--chart-a)"/><circle cx="72" cy="90" r="12" fill="var(--chart-a)"/>
+        <circle cx="104" cy="90" r="12" fill="var(--warn)"/><circle cx="136" cy="90" r="12" fill="var(--bad)"/>
+        <circle cx="168" cy="90" r="12" fill="var(--warn)"/><circle cx="200" cy="90" r="12" fill="var(--muted)"/>
+        <circle cx="410" cy="90" r="12" fill="var(--chart-a)"/><circle cx="442" cy="90" r="12" fill="var(--warn)"/>
+        <circle cx="474" cy="90" r="12" fill="var(--bad)"/>
+      </g>
+      <text class="t" x="520" y="95">same colours on both sides</text>
+      <text class="t" x="520" y="113">= copies leak into test</text>
+
+      <text class="tb" x="10" y="172">Variant B · honest (all copies kept together)</text>
+      <rect class="s-box" x="10" y="186" width="330" height="96" rx="8"/><text class="tm" x="22" y="204">TRAIN</text>
+      <rect class="s-box" x="380" y="186" width="330" height="96" rx="8"/><text class="tm" x="392" y="204">TEST</text>
+      <circle cx="40" cy="240" r="12" fill="var(--chart-a)"/><circle cx="72" cy="240" r="12" fill="var(--warn)"/>
+      <circle cx="104" cy="240" r="12" fill="var(--muted)"/>
+      <circle cx="410" cy="240" r="12" fill="var(--bad)"/><circle cx="442" cy="240" r="12" fill="var(--good)"/>
+      <text class="t" x="520" y="245">each colour on one side only</text>
+      <text class="t" x="520" y="263">= test is truly unseen</text>
+    </svg>
+    </div>
+    <figcaption>Each colour is one distinct packet shape (feature vector). Variant A copies them across the split. Variant B keeps every copy of a shape on the same side.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>Variant A</th><th>Variant B</th></tr></thead>
+    <tbody>
+      <tr><td>Data</td><td>The published <code>train70</code> / <code>test30</code> files, unchanged</td><td>Remove exact copies, then split so the same packet shape never sits on both sides</td></tr>
+      <tr><td>Purpose</td><td>Comparable with published papers</td><td>An honest estimate of real performance</td></tr>
+      <tr><td>Leakage</td><td>66.91% of test rows</td><td>None, by design</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>The plan</strong> was that the gap between A and B (in macro F1) would show how much duplication inflates published results.</p>
+  <div class="box careful">
+    <span class="k">What actually happened</span>
+    <p>Variant A scored <em>lower</em> than B, so the plain gap cannot be read as "inflation". Chapter 9 explains why, and what the better measure is.</p>
+  </div>
+  <p>The tool for B's split is <code>StratifiedGroupKFold</code>: "group" keeps copies together, "stratified" keeps the class mix balanced across sides.</p>
+</section>
+
+<!-- 8 -->
+<section id="models">
+  <p class="chap">Chapter 8</p>
+  <h2>The three models</h2>
+  <p class="sub">Three kinds of learner, chosen to be small enough for a laptop CPU.</p>
+
+  <h3>Random Forest</h3>
+  <p>A <strong>decision tree</strong> is a flowchart of yes/no questions: "Is <code>mqtt.msgtype</code> = 1? Is <code>mqtt.kalive</code> over 60?" until it reaches an answer. A <strong>random forest</strong> grows 100 trees, each on a slightly different random sample of the data, and lets them <strong>vote</strong>.</p>
+  <figure>
+    <div class="scroll">
+    <svg viewBox="0 0 720 150" role="img" aria-label="Random forest: several trees vote, majority wins">
+      <g>
+        <rect class="s-box" x="20" y="20" width="120" height="44" rx="6"/><text class="t" x="44" y="47">Tree 1: dos</text>
+        <rect class="s-box" x="160" y="20" width="120" height="44" rx="6"/><text class="t" x="184" y="47">Tree 2: dos</text>
+        <rect class="s-box" x="300" y="20" width="120" height="44" rx="6"/><text class="t" x="316" y="47">Tree 3: legit</text>
+        <rect class="s-box" x="440" y="20" width="120" height="44" rx="6"/><text class="t" x="464" y="47">Tree …: dos</text>
+      </g>
+      <path class="s-line" d="M80 64 L330 104 M220 64 L330 104 M360 64 L330 104 M500 64 L330 104"/>
+      <rect class="s-soft" x="250" y="104" width="170" height="38" rx="8"/><rect class="s-accline" x="250" y="104" width="170" height="38" rx="8"/>
+      <text class="tb" x="270" y="128">Majority: dos</text>
+      <text class="tm" x="590" y="47">(pretend votes)</text>
+    </svg>
+    </div>
+    <figcaption>Many slightly different trees voting is more reliable than one tree. It is the most common baseline in MQTT IDS papers.</figcaption>
+  </figure>
+
+  <h3>XGBoost</h3>
+  <p>Also builds many trees, but <strong>one after another</strong>: each new tree focuses on the mistakes the previous trees made. It is often the strongest model on table-shaped data like yours.</p>
+
+  <h3>MLP (a small neural network)</h3>
+  <p>A <strong>multi-layer perceptron</strong> passes the 21 feature values through two layers of "neurons" (64, then 32), which combine them into an answer. It represents deep learning, kept small for your CPU. It needs <strong>scaled</strong> inputs: every feature rescaled to a similar range, so a big number like a byte count does not drown out a small one like a flag.</p>
+
+  <h3>Feature importance</h3>
+  <p>Tree models can report which features they relied on most. This matters for Phase 2: <strong>a feature that is both important and changeable by the attacker is the first thing an attacker will tweak.</strong></p>
+</section>
+
+<!-- 9 -->
+<section id="results">
+  <p class="chap">Chapter 9</p>
+  <h2>What Phase 1 found</h2>
+  <p class="sub">Step 2 and the model results, in plain words.</p>
+  <div class="box careful">
+    <span class="k">Where these numbers come from</span>
+    <p>The Phase 1 code was run in the cloud session on your uploaded copies of the three CSV files. Those copies gave exactly the same Task 1 output as your Mac. You still need to run it once on your Mac so the official numbers are your own. They should match exactly, except the timing numbers.</p>
+  </div>
+
+  <h3>Step 2: preparing the data</h3>
+  <ul>
+    <li><strong>20 features</strong> are used: 33 minus 12 constant columns minus <code>mqtt.msg</code>.</li>
+    <li>Hex text becomes a number. A plain <code>0</code> ("field not in this packet") becomes −1, so it is not confused with a real zero.</li>
+  </ul>
+
+  <h3>The guess about conflicts was right</h3>
+  <p>Of the rows whose features also appear under another label, <mark>99.89% have no MQTT header at all</mark>. They are bare TCP packets (acknowledgements, handshakes) that look the same in every capture. Each one got the label of the capture file it came from. That is how MQTTset was labelled, so you report it as a <strong>limitation of the dataset</strong>.</p>
+
+  <h3>A hidden giveaway in <code>mqtt.msg</code></h3>
+  <p>Every <code>slowite</code> row, and no other row, writes its payload as <code>0.0</code>. All the others write <code>0</code>. That is a formatting accident, not attack behaviour, but a model reading the text could use it to spot <code>slowite</code> perfectly. It is a second reason for dropping <code>mqtt.msg</code>.</p>
+
+  <h3>New ceiling: 93.27%</h3>
+  <p>On the 20 final features, 6.73% of rows are unavoidable errors, so <strong>no model can beat 93.27% accuracy</strong> on this data. Leakage in the published split rises to <strong>69.59%</strong> of test rows, and for <code>legitimate</code> to 98.43%.</p>
+
+  <h3>The model results</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th class="n">Macro F1, Variant A</th><th class="n">Macro F1, Variant B</th></tr></thead>
+    <tbody>
+      <tr><td>XGBoost (best)</td><td class="n">0.6164</td><td class="n">0.8673</td></tr>
+      <tr><td>Random Forest</td><td class="n">0.6094</td><td class="n">0.8559</td></tr>
+      <tr><td>MLP</td><td class="n">0.5410</td><td class="n">0.8030</td></tr>
+    </tbody>
+  </table></div>
+  <p>Held-out test set, balanced class weights. Cross-validation gave almost the same numbers, for example XGBoost on B: 0.8662 ± 0.0174 over 15 folds.</p>
+
+  <h3>The surprise: the leaky split scored lower</h3>
+  <p>You expected A, with all its leakage, to look better. It looks worse. The reason is that A's test set is really three different groups mixed together:</p>
+  <figure>
+    <div class="stack" role="img" aria-label="Variant A test set: 34% seen and unambiguous, 35% seen and ambiguous, 30% unseen" style="height:44px">
+      <div style="flex:34.37;background:var(--good)">seen, one label 34%</div>
+      <div style="flex:35.21;background:var(--bad)">seen, several labels 35%</div>
+      <div style="flex:30.41;background:var(--muted)">unseen 30%</div>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Group</th><th class="n">Share of test</th><th class="n">Random Forest accuracy</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>Seen in training, one label</td><td class="n">34.37%</td><td class="n">99.98%</td><td>Memorised. <strong>This is the inflation.</strong></td></tr>
+        <tr><td>Seen in training, several labels</td><td class="n">35.21%</td><td class="n">57.54%</td><td>Ambiguous bare TCP packets. Nobody can get these all right.</td></tr>
+        <tr><td>Not seen in training</td><td class="n">30.41%</td><td class="n">98.46%</td><td>Genuinely new rows.</td></tr>
+      </tbody>
+    </table></div>
+    <figcaption>Random Forest, Variant A, with balanced class weights. Bar widths to scale. Without class weights the middle group rises to 78.98%.</figcaption>
+  </figure>
+  <p>So <strong>memorisation is real</strong> (a third of the published test set is answered almost perfectly because it was in training), but in this dataset an even bigger block of ambiguous packets pulls the score down. Variant B keeps only one row per (packet shape, label), so those repeated ambiguous packets almost disappear. That is why B scores higher. <mark>The A − B gap mixes two opposite effects, so it is not a measure of inflation.</mark> The three-group table is.</p>
+
+  <h3>Class weights: a trade-off</h3>
+  <p>"Balanced" class weights tell the model that rare classes matter more. On Variant A that pushes the ambiguous packets towards rare classes: more <code>flood</code> caught, but many false alarms (14.5% of normal traffic flagged). Without weights, XGBoost on A reaches <strong>92.34%</strong> accuracy, close to the 93.27% ceiling, with only 1.29% false alarms, but it catches fewer rare attacks. You report the weighted version as planned and the unweighted one as a <strong>sensitivity check</strong>.</p>
+
+  <h3>The message ID clue (for Phase 2)</h3>
+  <p>XGBoost's most important feature on B is <code>mqtt.msgid</code>. It is 0 in every <code>legitimate</code>, <code>flood</code>, <code>slowite</code> and <code>bruteforce</code> row, but non-zero in most <code>dos</code> rows. MQTT only adds a message ID when a message is sent with QoS 1 or 2, so in this dataset DoS traffic uses QoS above 0. An attacker can simply choose QoS 0. That is a ready-made evasion to test in Phase 2.</p>
+
+  <h3>Cost (for O4, cloud machine, will differ on your Mac)</h3>
+  <ul>
+    <li><strong>XGBoost:</strong> about 1.1 MB, 0.3–0.6 ms per packet. Best balance.</li>
+    <li><strong>Random Forest:</strong> 42–49 MB, about 4 ms per packet.</li>
+    <li><strong>MLP:</strong> about 124 KB, 0.3 ms per packet, but the least accurate.</li>
+  </ul>
+  <p>Unreliable: <code>flood</code> has only 94 (A) and 80 (B) unique test packets, below the 100 line, so its per-class scores are marked unreliable.</p>
+</section>
+
+<!-- 10 -->
+<section id="next">
+  <p class="chap">Chapter 10</p>
+  <h2>Where it goes next</h2>
+  <p class="sub">The rest of Phase 1, then a glimpse of Phase 2.</p>
+
+  <h3>Phase 1 status</h3>
+  <p>All six steps are built and have run on the real data in the cloud: preparation, both variants, three models, all metrics, figures and a findings draft (<code>docs/phase1/PHASE1_FINDINGS.md</code>). What is left for Phase 1:</p>
+  <ol class="steps">
+    <li><strong>Run it on your Mac</strong> and check the numbers match.</li>
+    <li><strong>Agree the decisions with Dr. Bryan</strong>: the new headline framing, class weights, dropping <code>mqtt.msg</code>, the <code>flood</code> warning.</li>
+    <li><strong>Read every figure</strong> and be able to explain it.</li>
+  </ol>
+
+  <h3>Why drop <code>mqtt.msg</code>?</h3>
+  <p>It is the message content, with 50,054 different values. A model could memorise specific sensor readings instead of learning attack behaviour. And an attacker controls the content completely, so it would be the easiest feature to fake in Phase 2. Dropping it is a stated decision you will report, not a hidden one.</p>
+
+  <h3>Phase 2 preview: realistic attacks</h3>
+  <p>An attacker cannot change just any feature. The packet must still be valid MQTT and the attack must still work. Your report groups fields like this:</p>
+  <p><strong>Can be changed by the attacker</strong></p>
+  <div class="chips"><span class="chip mut">tcp.time_delta</span><span class="chip mut">tcp.len</span><span class="chip mut">mqtt.kalive</span><span class="chip mut">mqtt.len</span></div>
+  <p><strong>Cannot be changed without breaking the protocol or the attack</strong></p>
+  <div class="chips"><span class="chip imm">mqtt.msgtype</span><span class="chip imm">mqtt.protoname</span><span class="chip imm">mqtt.ver</span><span class="chip imm">mqtt.conflags</span></div>
+  <p><strong>Must change together</strong></p>
+  <div class="chips"><span class="chip dep">mqtt.len ↔ tcp.len</span></div>
+  <p>That is what "constraint-aware" means in your title: attacks that obey these rules.</p>
+
+  <h3>A realistic timeline</h3>
+  <div class="timeline">
+    <div class="now"><b>This week</b><span>Study this guide. Run Phase 1 on your Mac. Show Dr. Bryan the results and the decisions list. List the papers you cite for 97–99% and which MQTTset file each used.</span></div>
+    <div><b>Week of 9 Nov</b><span>Apply Dr. Bryan's feedback. Write the Phase 1 results section of your report in your own words.</span></div>
+    <div><b>Weeks of 16 and 23 Nov</b><span>Phase 2 groundwork: classify every one of the 20 features as mutable, immutable or dependent (including <code>mqtt.msgid</code> and <code>mqtt.qos</code>). Set up the Mosquitto broker.</span></div>
+    <div><b>December</b><span>First constraint-aware attacks against the Phase 1 models.</span></div>
+    <div><b>End of December or January</b><span>Show Phase 1 complete and Phase 2 under way.</span></div>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="talk">
+  <p class="chap">Chapter 11</p>
+  <h2>Talking about it</h2>
+  <p class="sub">For Dr. Bryan this week, and for the panel later.</p>
+
+  <h3>Your three sentences for Dr. Bryan</h3>
+  <div class="box say">
+    <span class="k">Say it like this</span>
+    <p>"In the published split, about 70% of test packets also appear in training. A third of the test set is copies of unambiguous training packets, and the models get those almost 100% right. That part of the score is memory."</p>
+    <p>"Another third is bare TCP packets with no MQTT content that carry different labels depending on which capture they came from. That caps accuracy at 93.27% on my 20 features, so 97–99% needs explaining. I still need to check which file each paper used."</p>
+    <p>"On an honest de-duplicated split, XGBoost is the best model, with macro F1 0.867. I need your view on four decisions: how to frame the results, class weights, dropping <code>mqtt.msg</code>, and the small <code>flood</code> class."</p>
+  </div>
+  <p>Then show him <code>docs/phase1/PHASE1_FINDINGS.md</code> (section 6 is the decisions list) and the figures. If he asks, run <code>python3 src/dedup_analysis.py</code> in front of him. It takes 10 seconds.</p>
+
+  <h3>Questions you may be asked</h3>
+  <details><summary>Is the dataset labelled? Is it balanced?</summary>
+    <p>Labelled, yes: every row has a <code>target</code> label with six classes. Not balanced: <code>legitimate</code> is 50% and <code>flood</code> 0.19%, about 270 to 1.</p></details>
+  <details><summary>Aren't the duplicates just bad data? Why not delete them?</summary>
+    <p>They are real: network traffic repeats. Deleting them would change the real-world class mix. The problem is only that a random split puts copies on both sides. So I keep Variant A as published, and in Variant B I keep all copies of a packet on one side of the split.</p></details>
+  <details><summary>How do you know your leakage number is right?</summary>
+    <p>It compares every row of the full test file against every row of the full training file, exactly, not a sample. The script is in the repository and gives the same answer every run.</p></details>
+  <details><summary>Why not report accuracy?</summary>
+    <p>With this imbalance, a detector that always says "legitimate" gets 50% accuracy and catches nothing. Macro F1 weights every class equally, so a missed attack type shows up.</p></details>
+  <details><summary>Are you saying published papers are wrong?</summary>
+    <p>No. I'm saying their test setup lets a third of the test set be answered from memory, and that on this file and these features 93.27% is the maximum possible. I first need to check that a paper used the same file and features.</p></details>
+  <details><summary>Why did the leaky split score lower than the honest one?</summary>
+    <p>Its test set mixes three groups: memorised packets (about 100% right), ambiguous bare TCP packets with conflicting labels (much lower), and new packets. The ambiguous group outweighs the memorised one. The de-duplicated split removes most repeats of the ambiguous packets.</p></details>
+  <details><summary>Why is message ID the top feature?</summary>
+    <p>Only QoS 1 or 2 messages carry an ID, and in this dataset only DoS traffic uses QoS above 0. It is real protocol behaviour, but an attacker can choose QoS 0, so it is an obvious target for Phase 2.</p></details>
+  <details><summary>Why not use SMOTE to fix the imbalance?</summary>
+    <p>SMOTE creates synthetic rows by blending real ones. A blended MQTT packet may not be a valid packet, which contradicts my project's whole argument about staying protocol-valid. So I use class weighting instead and report per-class scores.</p></details>
+</section>
+
+<!-- 11 -->
+<section id="quiz">
+  <p class="chap">Chapter 12</p>
+  <h2>Test yourself</h2>
+  <p class="sub">Answer out loud before you open each one. If you get stuck, reread the chapter in brackets.</p>
+  <details><summary>1. What is one row of your dataset? (ch. 3)</summary><p>One network packet, described by 33 feature columns and labelled with one of six classes in <code>target</code>.</p></details>
+  <details><summary>2. What does the broker do in MQTT? (ch. 2)</summary><p>It receives every published message and forwards it to the devices subscribed to that topic. Devices never talk directly.</p></details>
+  <details><summary>3. Why can 0 in an MQTT column be misleading? (ch. 2)</summary><p>It often means the field does not exist in that packet type, not that its value is zero.</p></details>
+  <details><summary>4. Recall vs precision, in one line each. (ch. 5)</summary><p>Recall: of the real attacks, how many did we catch. Precision: of our alarms, how many were real.</p></details>
+  <details><summary>5. Why is macro F1 your headline and not accuracy? (ch. 5)</summary><p>Macro F1 weights each class equally, so missing a rare class like <code>flood</code> shows up. Accuracy hides it.</p></details>
+  <details><summary>6. What is leakage, and how much is in the published split? (ch. 6)</summary><p>Test rows that also appear in training. 66,432 of 99,290 test rows, 66.91%.</p></details>
+  <details><summary>7. Why are there so many duplicates? (ch. 6)</summary><p>Packet-level traffic is repetitive by nature. The duplicates are real, not errors.</p></details>
+  <details><summary>8. What is a label conflict, and why can't a model fix it? (ch. 6)</summary><p>Identical features with different labels. The model only sees features, so it must give both rows the same answer.</p></details>
+  <details><summary>9. What does 94.38% mean, and what are its limits? (ch. 6)</summary><p>The best possible accuracy on this file with these 33 features, because 5.62% of rows are unavoidable errors. It is for the whole file, only this file and feature set, and will change after Step 2.</p></details>
+  <details><summary>10. What is the difference between Variant A and B? (ch. 7)</summary><p>A uses the published split with its leakage. B keeps one row per packet shape and label, split so the same shape is never on both sides, so the test is truly unseen.</p></details>
+  <details><summary>11. Random Forest vs XGBoost in one line each. (ch. 8)</summary><p>RF: many independent trees vote. XGBoost: trees built one after another, each fixing earlier mistakes.</p></details>
+  <details><summary>12. Why does Phase 2 care about feature importance? (ch. 8, 10)</summary><p>Features that are important and changeable by the attacker are the ones an attacker will tweak first.</p></details>
+  <details><summary>13. Why did Variant A score lower than B? (ch. 9)</summary><p>A's test set mixes memorised packets (about 100% right), ambiguous bare TCP packets (much lower) and new packets. The ambiguous block pulls it down more than memorisation lifts it.</p></details>
+  <details><summary>14. Give two reasons for dropping mqtt.msg. (ch. 9)</summary><p>The model could memorise payload content, which the attacker fully controls; and every slowite row writes it as "0.0", a formatting giveaway.</p></details>
+  <details><summary>15. What is the best model, and what is its honest score? (ch. 9)</summary><p>XGBoost: macro F1 0.8673 on Variant B's held-out test set (0.8662 ± 0.0174 in cross-validation). Small (about 1 MB) and fast.</p></details>
+</section>
+
+<!-- 12 -->
+<section id="gloss">
+  <p class="chap">Chapter 13</p>
+  <h2>Glossary</h2>
+  <p class="sub">Quick lookup.</p>
+  <dl class="glossary">
+    <div><dt>Adversarial / adaptive attacker</dt><dd>An attacker who knows a detector exists and changes their traffic to slip past it.</dd></div>
+    <div><dt>Broker</dt><dd>The central MQTT server every message passes through.</dd></div>
+    <div><dt>Class</dt><dd>One possible label value, for example <code>dos</code>.</dd></div>
+    <div><dt>Class imbalance</dt><dd>Some classes have far more rows than others (here about 270 to 1).</dd></div>
+    <div><dt>Confusion matrix</dt><dd>Table of true class against predicted class.</dd></div>
+    <div><dt>Constant feature</dt><dd>A column that has the same value in every row; useless for learning.</dd></div>
+    <div><dt>Cross-validation</dt><dd>Repeating train-and-check on different slices of the training data and averaging.</dd></div>
+    <div><dt>Duplicate</dt><dd>A row whose features are identical to another row's.</dd></div>
+    <div><dt>Error floor / ceiling</dt><dd>The share of rows no model can get right (5.62%), and so the best possible accuracy (94.38%).</dd></div>
+    <div><dt>Feature</dt><dd>One input column describing a packet.</dd></div>
+    <div><dt>Feature vector</dt><dd>All the feature values of one row together.</dd></div>
+    <div><dt>F1 / macro F1 / weighted F1</dt><dd>Balance of precision and recall; plain average over classes; average weighted by class size.</dd></div>
+    <div><dt>False positive rate</dt><dd>Share of normal traffic wrongly flagged as attack.</dd></div>
+    <div><dt>Generalise</dt><dd>Do well on data the model has never seen.</dd></div>
+    <div><dt>Hex</dt><dd>Base-16 numbers like <code>0x00000018</code> (= 24 in normal counting).</dd></div>
+    <div><dt>IDS</dt><dd>Intrusion detection system: watches traffic and raises alarms.</dd></div>
+    <div><dt>Inference latency</dt><dd>Time a trained model takes to judge one packet.</dd></div>
+    <div><dt>Label</dt><dd>The correct answer for a row (<code>target</code>).</dd></div>
+    <div><dt>Label conflict</dt><dd>Identical features, different labels.</dd></div>
+    <div><dt>Leakage</dt><dd>Test rows that also appear in training, so the test is not really unseen.</dd></div>
+    <div><dt>Overfitting</dt><dd>Learning the training data's quirks so closely that performance on new data suffers.</dd></div>
+    <div><dt>Precision</dt><dd>Of the alarms raised for a class, the share that were correct.</dd></div>
+    <div><dt>Recall</dt><dd>Of the real rows of a class, the share that were caught.</dd></div>
+    <div><dt>Reproducible</dt><dd>Running the same code on the same data gives the same numbers.</dd></div>
+    <div><dt>Scaling</dt><dd>Rescaling features to similar ranges; needed for the MLP.</dd></div>
+    <div><dt>Seed</dt><dd>A fixed number (42) that makes random steps repeatable.</dd></div>
+    <div><dt>Standard deviation</dt><dd>How much results wobble across repeated runs.</dd></div>
+    <div><dt>Stratified</dt><dd>Splitting so each part keeps the same class mix.</dd></div>
+    <div><dt>Test set / training set</dt><dd>Rows held back for the final check / rows the model learns from.</dd></div>
+  </dl>
+</section>
+</main>
+</div>

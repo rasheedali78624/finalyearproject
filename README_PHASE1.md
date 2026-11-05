@@ -33,6 +33,7 @@ Run single steps on their own:
 ```bash
 python3 src/dedup_analysis.py          # Task 1: duplication and leakage, raw files
 python3 src/feature_space_analysis.py  # Step 2: re-measure on the 20 model features
+python3 src/sensitivity_checks.py      # class weights on/off; Variant A seen/unseen groups
 ```
 
 If XGBoost fails with a `libomp` error: `brew install libomp`.
@@ -49,6 +50,7 @@ If XGBoost fails with a `libomp` error: `brew install libomp`.
 | `src/models.py` | Random Forest, XGBoost, MLP with the brief's settings |
 | `src/evaluate.py` | Metrics, latency, model size, plots |
 | `src/run_phase1.py` | Runs everything end to end |
+| `src/sensitivity_checks.py` | Sensitivity check on class weighting; splits Variant A's test rows into memorised / ambiguous / unseen |
 
 ## Outputs
 
@@ -76,3 +78,11 @@ and `results/phase1/PHASE1_RESULTS_AUTO.md` with all result tables.
 - **Reproducibility**: seed 42 everywhere. Every number except the timing
   numbers (latency, training time) should be identical on re-run on the same
   machine and library versions.
+
+## Findings so far
+
+- `docs/phase1/TASK1_FINDINGS.md`: duplication and leakage (Mac run)
+- `docs/phase1/STEP2_FINDINGS.md`: encoding and feature-space re-measurement
+- `docs/phase1/PHASE1_FINDINGS.md`: model results and decisions (cloud verification run; confirm on Mac)
+- `docs/phase1/cloud_run_20261105/`: tables, figures and logs from the cloud run
+- `docs/phase1/study_guide.html`: offline copy of the study guide (open in a browser)
