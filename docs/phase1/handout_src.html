@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phase 1 Meeting Handout</title>
+<style>
+@page { size: A4; margin: 13mm 14mm; }
+:root{ --fg:#1B2421; --muted:#55635E; --line:#CFD8D4; --acc:#0F6B5C; --soft:#E3F1ED;
+  --good:#2E7D4F; --bad:#B33A3A; --grey:#7D8A85; --warn:#9A6400; --warnsoft:#F7EACB; }
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--fg);font:9.3pt/1.36 "Helvetica Neue",Helvetica,Arial,sans-serif;}
+.page{max-width:182mm;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--acc);padding-bottom:5px;margin-bottom:8px;gap:12px}
+h1{font-size:15.5pt;margin:0;letter-spacing:-.01em}
+.meta{font-size:8.1pt;color:var(--muted);text-align:right;line-height:1.35;white-space:nowrap}
+.sub{font-size:9pt;color:var(--muted);margin:2px 0 0}
+h2{font-size:9.8pt;margin:8px 0 3px;color:var(--acc);text-transform:uppercase;letter-spacing:.05em}
+ul{margin:0;padding-left:16px} li{margin-bottom:2.5px}
+table{border-collapse:collapse;width:100%;font-size:8.8pt;font-variant-numeric:tabular-nums}
+th,td{white-space:nowrap;padding:3px 5px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--muted);font-size:8pt}
+tr.best td{font-weight:700;background:var(--soft)}
+.two{display:grid;grid-template-columns:1.55fr 1fr;gap:12px}
+.bar{display:flex;height:22px;border-radius:4px;overflow:hidden;font-size:8pt;color:#fff;font-weight:700;margin:4px 0 4px}
+.bar div{display:flex;align-items:center;justify-content:center;white-space:nowrap}
+.note{font-size:8pt;color:var(--muted)}
+.dec{counter-reset:d;list-style:none;padding:0}
+.dec li{counter-increment:d;position:relative;padding-left:20px;margin-bottom:4px}
+.dec li::before{content:counter(d);position:absolute;left:0;top:0;width:14px;height:14px;border-radius:50%;background:var(--acc);color:#fff;font-size:8pt;text-align:center;line-height:14px;font-weight:700}
+.key{background:var(--warnsoft);border-radius:6px;padding:6px 9px;margin:6px 0}
+footer{margin-top:9px;border-top:1px solid var(--line);padding-top:5px;font-size:7.6pt;color:var(--muted)}
+code{font-family:Menlo,Consolas,monospace;font-size:8pt}
+@media (max-width:640px){ .two{grid-template-columns:1fr} header{flex-direction:column;align-items:flex-start} .meta{text-align:left} body{padding:0 16px} }
+</style></head>
+<body><div class="page">
+<header>
+  <div>
+    <h1>Phase 1 (O1): baseline detection on MQTTset</h1>
+    <p class="sub">Evaluating and Improving the Adversarial Robustness of ML-Based Intrusion Detection in MQTT IoT Networks</p>
+  </div>
+  <div class="meta">Rasheed Ali Saadik Ali · 23089292<br>Supervisor: Dr. Bryan Raj<br>Progress update · 5 Nov 2026</div>
+</header>
+
+<h2>1 · What the data showed</h2>
+<ul>
+  <li><strong>Heavy duplication.</strong> 63.31% of rows are exact duplicates. Normal for packet-level traffic, but in the <strong>published train/test split, 69.59% of test rows have an exact copy in training</strong> (98.43% for <code>legitimate</code>).</li>
+  <li><strong>Label ambiguity caps accuracy.</strong> 1,335 identical feature vectors carry more than one label. <strong>99.89%</strong> of those rows are bare TCP packets with no MQTT layer, labelled by capture file. Unavoidable error is 6.73%, so <strong>no model can exceed 93.27% accuracy</strong> on the 20 features.</li>
+  <li><strong><code>mqtt.msg</code> dropped.</strong> Payload text (50,054 values) is memorisable and attacker-controlled, and every <code>slowite</code> row, and no other row, writes it as <code>0.0</code>: a formatting giveaway.</li>
+  <li><strong>Features used: 20</strong> = 33 − 12 constant − <code>mqtt.msg</code>. Hex fields → integers; "field absent" kept distinct from zero.</li>
+</ul>
+
+<h2>2 · Results: held-out test set, macro F1 (headline)</h2>
+<div class="two">
+<div>
+<table>
+  <thead><tr><th>Model</th><th>A: published</th><th>B: de-dup.</th><th>B: CV, 15 folds</th></tr></thead>
+  <tbody>
+    <tr class="best"><td>XGBoost</td><td>0.6164</td><td>0.8673</td><td>0.8662 ± 0.0174</td></tr>
+    <tr><td>Random Forest</td><td>0.6094</td><td>0.8559</td><td>0.8553 ± 0.0178</td></tr>
+    <tr><td>MLP</td><td>0.5837</td><td>0.8030</td><td>0.8005 ± 0.0247</td></tr>
+  </tbody>
+</table>
+<p class="note">Balanced class weights, no oversampling. B = one row per (feature vector, label), grouped + stratified 70/30 split, zero vectors shared between train and test.</p>
+</div>
+<div>
+<table>
+  <thead><tr><th>Cost (Mac, Variant B)</th><th>Size</th><th>ms / packet</th></tr></thead>
+  <tbody>
+    <tr class="best"><td>XGBoost</td><td>1,080 KB</td><td>0.106</td></tr>
+    <tr><td>Random Forest</td><td>42,049 KB</td><td>2.985</td></tr>
+    <tr><td>MLP</td><td>123 KB</td><td>0.164</td></tr>
+  </tbody>
+</table>
+<p class="note">Latency = one packet at a time, single thread. XGBoost is the best model on accuracy and cost.</p>
+</div>
+</div>
+
+<h2>3 · Main finding: the leaky split scores <em>lower</em>, and why</h2>
+<p style="margin:0 0 2px">Variant A's test set is three populations (Random Forest, balanced weights):</p>
+<div class="bar">
+  <div style="flex:34.37;background:var(--good)">seen, one label · 34.37% · acc 99.98%</div>
+  <div style="flex:35.21;background:var(--bad)">seen, ambiguous · 35.21% · acc 57.54%</div>
+  <div style="flex:30.41;background:var(--grey)">unseen · 30.41% · acc 98.46%</div>
+</div>
+<div class="key"><strong>Memorisation is real:</strong> a third of the published test set is answered almost perfectly because it was in training. But an even larger block of ambiguous TCP packets pulls Variant A down, so <strong>the A − B gap is not a measure of inflation</strong>. The three-group breakdown is the honest measure. Without class weights, A reaches 92.14–92.34% accuracy, close to the 93.27% ceiling.</div>
+
+<h2>4 · Decisions I need your view on</h2>
+<ol class="dec">
+  <li><strong>Framing:</strong> report the three-group breakdown as the headline, instead of the A − B gap.</li>
+  <li><strong>Class weights:</strong> keep balanced weights as the main setting; report no-weights as a sensitivity check (fewer false alarms, lower rare-class recall).</li>
+  <li><strong>Drop <code>mqtt.msg</code></strong> (removes it from the O2 constraint set).</li>
+  <li><strong><code>flood</code></strong> has only 80 unique test vectors in B (94 in A): report its per-class scores as unreliable.</li>
+</ol>
+
+<h2>5 · Next (Phase 2, O2)</h2>
+<ul>
+  <li>Strongest XGBoost feature is <code>mqtt.msgid</code>. It is non-zero only when QoS &gt; 0, which in this data is almost only <code>dos</code>. <strong>An attacker can choose QoS 0</strong>: a first constraint-aware evasion to test.</li>
+  <li>Classify all 20 features as mutable / immutable / dependent; set up a Mosquitto broker to validate perturbations.</li>
+  <li>Before comparing with published 97–99%: check which MQTTset file and features each paper used.</li>
+</ul>
+
+<footer>
+All numbers from code run on my MacBook (5 Nov 2026; 10.5 min; seed 42; Python 3.14.2, scikit-learn 1.9.1, xgboost 3.4.1). A cloud re-run on identical data gave identical Random Forest and XGBoost results; only the unstable MLP on Variant A differed slightly between machines. Code, logs and full tables: GitHub <code>rasheedali78624/finalyearproject</code>, branch <code>claude/amazing-hopper-glemny</code>, <code>docs/phase1/PHASE1_FINDINGS.md</code>.
+</footer>
+</div></body></html>
