@@ -165,7 +165,7 @@ a{color:var(--accent)}
     <li><a href="#variants"><span>7</span>Variant A vs B</a></li>
     <li><a href="#models"><span>8</span>The three models</a></li>
     <li><a href="#results"><span>9</span>What Phase 1 found</a></li>
-    <li><a href="#next"><span>10</span>Where it goes next</a></li>
+    <li><a href="#next"><span>10</span>Where the project is heading</a></li>
     <li><a href="#talk"><span>11</span>Talking about it</a></li>
     <li><a href="#quiz"><span>12</span>Test yourself</a></li>
     <li><a href="#gloss"><span>13</span>Glossary</a></li>
@@ -174,7 +174,7 @@ a{color:var(--accent)}
 
 <main>
 <header class="hero">
-  <p class="eyebrow">MCS research project · Phase 1 study guide · updated 5 Nov 2026 with Phase 1 results</p>
+  <p class="eyebrow">MCS research project · Phase 1 study guide · updated 5 Nov 2026 with Phase 1 results, the paper review and the Phase 2 plan</p>
   <h1>Understanding your MQTT intrusion-detection project</h1>
   <p class="lede">Everything you need to explain your project in your own words: the idea, the data, the terms, and what your Task 1 results actually mean.</p>
 </header>
@@ -192,7 +192,8 @@ a{color:var(--accent)}
       <li><strong>Sitting 1 (about 45 min):</strong> chapters 1–3. The project, MQTT, the dataset.</li>
       <li><strong>Sitting 2 (about 45 min):</strong> chapters 4–5. The machine-learning words and metrics.</li>
       <li><strong>Sitting 3 (about 45 min):</strong> chapters 6–8. Your Task 1 findings, the two variants, the models.</li>
-      <li><strong>Sitting 4 (about 45 min):</strong> chapters 9–11. What the models showed and how to explain it. Then do the quiz in chapter 12 without looking back.</li>
+      <li><strong>Sitting 4 (about 45 min):</strong> chapters 9–10. What the models showed, and where the project goes now.</li>
+      <li><strong>Sitting 5 (about 30 min):</strong> chapter 11, then the quiz in chapter 12 without looking back.</li>
     </ul>
     <p>Read a section until you could explain it to a friend without the page in front of you, then move on.</p>
   </div>
@@ -216,8 +217,12 @@ a{color:var(--accent)}
   <p>Published papers say ML detectors catch MQTT attacks with <strong>97–99% accuracy</strong>. Your argument is that those tests are too easy, in two ways:</p>
   <ol class="steps">
     <li><strong>The attacker in those tests does not know the detector exists.</strong> A real attacker would adjust their traffic to slip past it.</li>
-    <li><strong>(Found today)</strong> The test data overlaps heavily with the training data, so part of the score is memory, not skill.</li>
+    <li><strong>(Found in Phase 1)</strong> The test data overlaps heavily with the training data, so part of the score is memory, not skill.</li>
   </ol>
+  <div class="box careful">
+    <span class="k">What the evidence changed</span>
+    <p>Phase 1 showed the picture is more interesting than "the scores are fake". On packets that really contain MQTT, a detector is genuinely accurate even on an honest split. But it relies on a few <strong>shortcut features</strong> an attacker can change, such as switching DoS traffic from QoS 1 to QoS 0. So your sharper argument is: <em>accurate, but not robust</em>. Chapter 10 explains it.</p>
+  </div>
 
   <div class="box analogy">
     <span class="k">Analogy: the exam</span>
@@ -822,37 +827,87 @@ a{color:var(--accent)}
 <!-- 10 -->
 <section id="next">
   <p class="chap">Chapter 10</p>
-  <h2>Where it goes next</h2>
-  <p class="sub">The rest of Phase 1, then a glimpse of Phase 2.</p>
+  <h2>Where the project is heading</h2>
+  <p class="sub">What the paper review and the new measurements mean for Phase 2.</p>
 
-  <h3>Phase 1 status</h3>
-  <p>All six steps are built and have run on the real data in the cloud: preparation, both variants, three models, all metrics, figures and a findings draft (<code>docs/phase1/PHASE1_FINDINGS.md</code>). What is left for Phase 1:</p>
+  <h3>Phase 1 is done</h3>
+  <p>All steps ran on your Mac (10.5 minutes), and Random Forest and XGBoost gave identical numbers on two different machines. Evidence is in <code>docs/phase1/mac_run_20261105/</code>.</p>
+
+  <h3>What your papers actually use</h3>
+  <ul>
+    <li><strong>Most of the 99%+ MQTT papers in your folder do not use MQTTset.</strong> They use MQTT-IoT-IDS2020, IoT-23, TON_IoT, CICIoT2023 or their own data. Your 93.27% ceiling only applies to MQTTset, so <mark>never quote it against those papers</mark>.</li>
+    <li><strong>Paper 15</strong> is the only MQTTset results paper. It drops <code>malformed</code> and <code>slowite</code>, uses SMOTE, reports only weighted F1 and never mentions duplicates. It is an example of the usual approach, not a number to "disprove".</li>
+    <li><strong>Paper 23</strong> did remove duplicates, on a different MQTT dataset. It supports your method, so cite it. Your work goes further: leakage in a published split, the bare-TCP ambiguity, the three-group breakdown.</li>
+    <li><strong>Paper 5 (a review)</strong> says MQTTset has "spoofing" attacks. It does not. Never copy numbers from a review table; go to the original paper.</li>
+  </ul>
+  <p>Full notes: <code>papers/PAPER_SCAN.md</code>.</p>
+
+  <h3>The new measurement: MQTT packets only</h3>
+  <p>37% of rows are bare TCP packets with no MQTT content, and they caused almost all the label conflicts. Remove them and the picture changes:</p>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th class="n">All rows</th><th class="n">MQTT packets only</th></tr></thead>
+    <tbody>
+      <tr><td>Rows</td><td class="n">330,926</td><td class="n">206,975</td></tr>
+      <tr><td>Rows with a label conflict</td><td class="n">34.89%</td><td class="n">0.06%</td></tr>
+      <tr><td>Best possible accuracy</td><td class="n">93.27%</td><td class="n">99.98%</td></tr>
+      <tr><td>XGBoost macro F1, honest split</td><td class="n">0.8673</td><td class="n">0.9792</td></tr>
+    </tbody>
+  </table></div>
+  <p>Cloud run on your data; confirm on your Mac with <code>python3 src/mqtt_only_analysis.py</code>.</p>
+  <div class="box plain">
+    <span class="k">What it means in plain words</span>
+    <p>On real MQTT packets, a detector genuinely works, even when it has never seen the test packets. So the interesting question is no longer "are the scores fake?" but <strong>"what is the detector relying on, and can an attacker take that away?"</strong> That is exactly Phase 2.</p>
+  </div>
+
+  <h3>Shortcut features</h3>
+  <p>A <strong>shortcut</strong> is a feature that happens to separate the classes in this dataset, but that an attacker could easily change. The data checks found three:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Shortcut</th><th>Evidence</th><th>Can the attacker change it?</th></tr></thead>
+    <tbody>
+      <tr><td>DoS uses QoS 1, normal traffic uses QoS 0</td><td>All 54,431 DoS PUBLISH packets are QoS 1; all 101,966 normal ones are QoS 0</td><td><strong>Yes.</strong> QoS is the sender's choice. Whether the DoS still works at QoS 0 needs a real broker test.</td></tr>
+      <tr><td>Message ID only appears with QoS above 0</td><td>99.98% of PUBLISH rows</td><td>It follows QoS. This is why message ID is XGBoost's top feature.</td></tr>
+      <tr><td>Normal traffic has no CONNECT packets at all</td><td>0 normal CONNECT rows</td><td>Not for bruteforce, which must connect. It is a <strong>dataset limitation</strong>: real devices do connect, so false alarms in real use would be higher.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>The constraint table (Phase 2, draft)</h3>
+  <p>Each of the 20 features was checked against the MQTT 3.1.1 rules and the data. The protocol rules hold on 100% of rows, except 39 <code>malformed</code> packets (which break rules on purpose) and the <code>tcp.len</code>/<code>mqtt.len</code> link.</p>
+  <p><strong>The attacker can change freely</strong></p>
+  <div class="chips"><span class="chip mut">mqtt.qos</span><span class="chip mut">mqtt.retain</span><span class="chip mut">mqtt.msgid (value)</span><span class="chip mut">mqtt.kalive*</span><span class="chip mut">cleansess</span><span class="chip mut">uname / passwd*</span></div>
+  <p><strong>Can change, but only within limits</strong></p>
+  <div class="chips"><span class="chip dep">tcp.time_delta (add delay only)</span><span class="chip dep">mqtt.len (not below minimum)</span><span class="chip dep">mqtt.dupflag (needs QoS &gt; 0)</span></div>
+  <p><strong>Calculated from other fields (dependent)</strong></p>
+  <div class="chips"><span class="chip dep">mqtt.hdrflags</span><span class="chip dep">mqtt.conflags</span><span class="chip dep">tcp.len</span><span class="chip dep">msgid present ⇔ QoS &gt; 0</span></div>
+  <p><strong>Cannot change</strong></p>
+  <div class="chips"><span class="chip imm">mqtt.msgtype</span><span class="chip imm">mqtt.protoname</span><span class="chip imm">mqtt.proto_len</span><span class="chip imm">mqtt.ver</span><span class="chip imm">tcp.flags</span><span class="chip imm">conack.* (sent by broker)</span></div>
+  <p>* <code>slowite</code> must keep its long keep-alive (65,535 s), and <code>bruteforce</code> must keep sending a username and password, otherwise the attack stops working.</p>
+  <div class="box careful">
+    <span class="k">Corrections to your submitted report</span>
+    <ul>
+      <li><code>mqtt.conflags</code> is <strong>dependent</strong>, not immutable: it equals 128·uname + 64·passwd + 2·cleansess.</li>
+      <li><code>tcp.len</code> is <strong>dependent</strong>, not freely mutable: it follows the MQTT bytes in the segment. The simple "+2" rule holds in only 60.20% of rows.</li>
+      <li>Missing from the report: <code>qos</code>, <code>retain</code>, <code>dupflag</code>, <code>msgid</code> and <code>cleansess</code> are attacker-changeable.</li>
+      <li><code>mqtt.msg</code> is gone from the feature set.</li>
+    </ul>
+  </div>
+
+  <h3>Recommended changes (agree these with Dr. Bryan)</h3>
   <ol class="steps">
-    <li><strong>Run it on your Mac</strong> and check the numbers match.</li>
-    <li><strong>Agree the decisions with Dr. Bryan</strong>: the new headline framing, class weights, dropping <code>mqtt.msg</code>, the <code>flood</code> warning.</li>
-    <li><strong>Read every figure</strong> and be able to explain it.</li>
+    <li><strong>Phase 2 onwards uses MQTT packets only</strong>, with the honest de-duplicated split.</li>
+    <li><strong>Reframe the argument</strong> from "accuracy is inflated" to "accuracy rests on shortcuts an attacker can change".</li>
+    <li><strong>Handle <code>malformed</code> separately.</strong> It breaks the protocol on purpose, so "stay protocol-valid" cannot apply to it.</li>
+    <li><strong>Attack XGBoost first</strong>, with one search method that works for all three models.</li>
+    <li><strong>Set up a Mosquitto broker</strong> to answer what the CSV cannot: does DoS still work at QoS 0? What is the real <code>tcp.len</code> rule? Is anonymous login allowed?</li>
   </ol>
-
-  <h3>Why drop <code>mqtt.msg</code>?</h3>
-  <p>It is the message content, with 50,054 different values. A model could memorise specific sensor readings instead of learning attack behaviour. And an attacker controls the content completely, so it would be the easiest feature to fake in Phase 2. Dropping it is a stated decision you will report, not a hidden one.</p>
-
-  <h3>Phase 2 preview: realistic attacks</h3>
-  <p>An attacker cannot change just any feature. The packet must still be valid MQTT and the attack must still work. Your report groups fields like this:</p>
-  <p><strong>Can be changed by the attacker</strong></p>
-  <div class="chips"><span class="chip mut">tcp.time_delta</span><span class="chip mut">tcp.len</span><span class="chip mut">mqtt.kalive</span><span class="chip mut">mqtt.len</span></div>
-  <p><strong>Cannot be changed without breaking the protocol or the attack</strong></p>
-  <div class="chips"><span class="chip imm">mqtt.msgtype</span><span class="chip imm">mqtt.protoname</span><span class="chip imm">mqtt.ver</span><span class="chip imm">mqtt.conflags</span></div>
-  <p><strong>Must change together</strong></p>
-  <div class="chips"><span class="chip dep">mqtt.len ↔ tcp.len</span></div>
-  <p>That is what "constraint-aware" means in your title: attacks that obey these rules.</p>
+  <p>Full reasoning: <code>docs/PROJECT_DIRECTION_REVIEW.md</code>. Constraint table: <code>docs/phase2/CONSTRAINT_TABLE.md</code>.</p>
 
   <h3>A realistic timeline</h3>
   <div class="timeline">
-    <div class="now"><b>This week</b><span>Study this guide. Run Phase 1 on your Mac. Show Dr. Bryan the results and the decisions list. List the papers you cite for 97–99% and which MQTTset file each used.</span></div>
-    <div><b>Week of 9 Nov</b><span>Apply Dr. Bryan's feedback. Write the Phase 1 results section of your report in your own words.</span></div>
-    <div><b>Weeks of 16 and 23 Nov</b><span>Phase 2 groundwork: classify every one of the 20 features as mutable, immutable or dependent (including <code>mqtt.msgid</code> and <code>mqtt.qos</code>). Set up the Mosquitto broker.</span></div>
-    <div><b>December</b><span>First constraint-aware attacks against the Phase 1 models.</span></div>
-    <div><b>End of December or January</b><span>Show Phase 1 complete and Phase 2 under way.</span></div>
+    <div class="now"><b>This week</b><span>Study this guide. Confirm the new numbers on your Mac. Meet Dr. Bryan with the handout and the direction review.</span></div>
+    <div><b>Weeks of 9 and 16 Nov</b><span>Finalise the constraint table. Set up Mosquitto on your Mac. Answer the testbed questions. Write the Phase 1 results in your own words.</span></div>
+    <div><b>Weeks of 23 and 30 Nov</b><span>First attack: DoS switched to QoS 0, against XGBoost on MQTT packets only. Then a general search over the changeable features.</span></div>
+    <div><b>December</b><span>Measure how much detection drops for each attack and model. Draft the O2 results.</span></div>
+    <div><b>End of December or January</b><span>Show Phase 1 complete and the first O2 results. Phase 3 (defence) next.</span></div>
   </div>
 </section>
 
@@ -869,7 +924,12 @@ a{color:var(--accent)}
     <p>"Another third is bare TCP packets with no MQTT content that carry different labels depending on which capture they came from. That caps accuracy at 93.27% on my 20 features, so 97–99% needs explaining. I still need to check which file each paper used."</p>
     <p>"On an honest de-duplicated split, XGBoost is the best model, with macro F1 0.867. I need your view on four decisions: how to frame the results, class weights, dropping <code>mqtt.msg</code>, and the small <code>flood</code> class."</p>
   </div>
-  <p>Then show him <code>docs/phase1/PHASE1_FINDINGS.md</code> (section 6 is the decisions list) and the figures. If he asks, run <code>python3 src/dedup_analysis.py</code> in front of him. It takes 10 seconds.</p>
+  <h3>And for the direction (one more minute)</h3>
+  <div class="box say">
+    <span class="k">Say it like this</span>
+    <p>"If I keep only packets that actually contain MQTT, label conflicts drop to 0.06% and XGBoost reaches macro F1 0.979 on an honest split. So the detectors are genuinely accurate. But they lean on shortcuts: every DoS message uses QoS 1, and normal traffic never does. An attacker can switch to QoS 0. I'd like Phase 2 to use MQTT packets only and test exactly those shortcuts, using the constraint table I've drafted."</p>
+  </div>
+  <p>Then show him the handout, <code>docs/phase1/PHASE1_FINDINGS.md</code> (section 6 is the decisions list), <code>docs/PROJECT_DIRECTION_REVIEW.md</code> (section 3 is the proposed changes) and the figures. If he asks, run <code>python3 src/dedup_analysis.py</code> in front of him. It takes 10 seconds.</p>
 
   <h3>Questions you may be asked</h3>
   <details><summary>Is the dataset labelled? Is it balanced?</summary>
@@ -881,7 +941,11 @@ a{color:var(--accent)}
   <details><summary>Why not report accuracy?</summary>
     <p>With this imbalance, a detector that always says "legitimate" gets 50% accuracy and catches nothing. Macro F1 weights every class equally, so a missed attack type shows up.</p></details>
   <details><summary>Are you saying published papers are wrong?</summary>
-    <p>No. I'm saying their test setup lets a third of the test set be answered from memory, and that on this file and these features 93.27% is the maximum possible. I first need to check that a paper used the same file and features.</p></details>
+    <p>No. Most of the 99% MQTT papers I read use a different dataset, MQTT-IoT-IDS2020, so my MQTTset ceiling does not apply to them. The one MQTTset paper I have drops the two hardest classes and never handles duplicates. And on MQTT packets alone, I find detection genuinely is very accurate. My point is that it relies on features an attacker can change.</p></details>
+  <details><summary>Why use only MQTT packets in Phase 2?</summary>
+    <p>Bare TCP packets have no MQTT fields for an attacker to change, and they are labelled by capture file, so they cause 99.89% of the label conflicts. Without them the honest baseline is strong (macro F1 0.979), so any drop under attack is meaningful. The cost is that the detector no longer looks at TCP-only traffic, which I report as a limitation.</p></details>
+  <details><summary>Isn't removing the bare TCP packets just making your results look better?</summary>
+    <p>I report both. The all-rows results stay as the Phase 1 finding about benchmark quality. The MQTT-only population is chosen for Phase 2 because the attacks change MQTT fields, and I state that choice and its cost openly.</p></details>
   <details><summary>Why did the leaky split score lower than the honest one?</summary>
     <p>Its test set mixes three groups: memorised packets (about 100% right), ambiguous bare TCP packets with conflicting labels (much lower), and new packets. The ambiguous group outweighs the memorised one. The de-duplicated split removes most repeats of the ambiguous packets.</p></details>
   <details><summary>Why is message ID the top feature?</summary>
@@ -910,6 +974,11 @@ a{color:var(--accent)}
   <details><summary>13. Why did Variant A score lower than B? (ch. 9)</summary><p>A's test set mixes memorised packets (about 100% right), ambiguous bare TCP packets (much lower) and new packets. The ambiguous block pulls it down more than memorisation lifts it.</p></details>
   <details><summary>14. Give two reasons for dropping mqtt.msg. (ch. 9)</summary><p>The model could memorise payload content, which the attacker fully controls; and every slowite row writes it as "0.0", a formatting giveaway.</p></details>
   <details><summary>15. What is the best model, and what is its honest score? (ch. 9)</summary><p>XGBoost: macro F1 0.8673 on Variant B's held-out test set (0.8662 ± 0.0174 in cross-validation). Small (about 1 MB) and fast.</p></details>
+  <details><summary>16. Why can't you quote 93.27% against most 99% MQTT papers? (ch. 10)</summary><p>Most of them use MQTT-IoT-IDS2020 or other datasets. The ceiling was measured on MQTTset with these 20 features only.</p></details>
+  <details><summary>17. What happens on MQTT packets only? (ch. 10)</summary><p>Label conflicts fall from 34.89% to 0.06%, the ceiling rises to 99.98%, and XGBoost reaches macro F1 0.9792 on an honest split.</p></details>
+  <details><summary>18. What is a shortcut feature? Give your best example. (ch. 10)</summary><p>A feature that separates the classes in this dataset but an attacker can change. Example: every DoS PUBLISH uses QoS 1 and every normal one QoS 0, and QoS is the sender's choice.</p></details>
+  <details><summary>19. Name one "dependent" feature and its rule. (ch. 10)</summary><p><code>mqtt.conflags</code> = 128·uname + 64·passwd + 2·cleansess. Or <code>mqtt.hdrflags</code> = 16·msgtype + the PUBLISH flag bits.</p></details>
+  <details><summary>20. Why is malformed handled separately in Phase 2? (ch. 10)</summary><p>Malformed traffic breaks the protocol on purpose, so the rule "stay protocol-valid" cannot apply to it.</p></details>
 </section>
 
 <!-- 12 -->
@@ -947,6 +1016,12 @@ a{color:var(--accent)}
     <div><dt>Standard deviation</dt><dd>How much results wobble across repeated runs.</dd></div>
     <div><dt>Stratified</dt><dd>Splitting so each part keeps the same class mix.</dd></div>
     <div><dt>Test set / training set</dt><dd>Rows held back for the final check / rows the model learns from.</dd></div>
+    <div><dt>Bare TCP packet</dt><dd>A TCP packet with no MQTT content, such as an acknowledgement or handshake. 37% of MQTTset rows.</dd></div>
+    <div><dt>Constraint (O2)</dt><dd>A rule an adversarial change must obey to keep the packet valid MQTT and the attack working.</dd></div>
+    <div><dt>Dependent feature</dt><dd>A feature calculated from others, so it changes only when they do.</dd></div>
+    <div><dt>Mosquitto</dt><dd>A widely used open-source MQTT broker; your Phase 2 testbed.</dd></div>
+    <div><dt>QoS (quality of service)</dt><dd>MQTT delivery level: 0 = send once, 1 = confirm delivery, 2 = exactly once. Chosen by the sender.</dd></div>
+    <div><dt>Shortcut feature</dt><dd>A feature that separates classes in a dataset for a reason an attacker can easily change.</dd></div>
   </dl>
 </section>
 </main>
