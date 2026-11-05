@@ -1,0 +1,7 @@
+class,total_rows,rows_with_conflicting_label,conflict_pct
+bruteforce,14501,8669,59.78
+dos,130223,36521,28.04
+flood,613,304,49.59
+legitimate,165463,60568,36.61
+malformed,10924,4649,42.56
+slowite,9202,0,0.0

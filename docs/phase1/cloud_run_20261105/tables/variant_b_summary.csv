@@ -1,0 +1,8 @@
+class,train_rows,test_rows,test_share_pct,flag
+bruteforce,3059,1313,30.03,
+dos,63690,27298,30.0,
+flood,186,80,30.08,FEW TEST ROWS (<100)
+legitimate,4215,1808,30.02,
+malformed,3321,1423,30.0,
+slowite,1805,775,30.04,
+TOTAL,76276,32697,30.0,

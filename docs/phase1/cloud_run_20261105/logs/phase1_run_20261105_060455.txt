@@ -1,0 +1,170 @@
+========================================================================
+PHASE 1 — FULL RUN
+Started: 2026-11-05 05:36:05
+Machine: Linux-6.18.44-fc-v236-x86_64-with-glibc2.39  CPU cores: 4
+Python 3.13.18  numpy 2.5.3  pandas 3.0.5  scikit-learn 1.9.1  xgboost 3.4.1  matplotlib 3.11.2  joblib 1.6.0
+Seed 42; CV 5 folds x 3 repeats; models ['RandomForest', 'XGBoost', 'MLP']
+MLP class weighting: balanced sample weights
+========================================================================
+
+Building variants...
+  Variant A: train 231,646  test 99,290  features 20
+  Variant B: train 76,276  test 32,697  features 20
+
+--- Variant A · RandomForest ---
+  fold  1: macro F1 0.6203  (2.3 s)
+  fold  2: macro F1 0.6257  (2.3 s)
+  fold  3: macro F1 0.6195  (2.3 s)
+  fold  4: macro F1 0.6190  (2.2 s)
+  fold  5: macro F1 0.6214  (2.2 s)
+  fold  6: macro F1 0.6173  (2.1 s)
+  fold  7: macro F1 0.6175  (2.2 s)
+  fold  8: macro F1 0.6193  (2.1 s)
+  fold  9: macro F1 0.6227  (2.1 s)
+  fold 10: macro F1 0.6199  (2.2 s)
+  fold 11: macro F1 0.6247  (2.2 s)
+  fold 12: macro F1 0.6246  (2.1 s)
+  fold 13: macro F1 0.6170  (2.2 s)
+  fold 14: macro F1 0.6230  (2.2 s)
+  fold 15: macro F1 0.6168  (2.2 s)
+  CV macro F1 = 0.6206 ± 0.0030  (33 s for CV)
+  TEST macro F1 0.6094  weighted F1 0.8812  accuracy 0.8457  FPR 0.1445
+  train 2.6 s  latency 0.00166 ms/sample (batch), 4.281 ms (single row)  size 48,569 KB
+
+--- Variant A · XGBoost ---
+  fold  1: macro F1 0.6268  (2.9 s)
+  fold  2: macro F1 0.6298  (2.8 s)
+  fold  3: macro F1 0.6255  (2.8 s)
+  fold  4: macro F1 0.6264  (2.8 s)
+  fold  5: macro F1 0.6295  (3.2 s)
+  fold  6: macro F1 0.6213  (2.8 s)
+  fold  7: macro F1 0.6239  (2.9 s)
+  fold  8: macro F1 0.6273  (2.8 s)
+  fold  9: macro F1 0.6280  (3.1 s)
+  fold 10: macro F1 0.6281  (3.0 s)
+  fold 11: macro F1 0.6313  (3.0 s)
+  fold 12: macro F1 0.6266  (3.1 s)
+  fold 13: macro F1 0.6226  (2.9 s)
+  fold 14: macro F1 0.6272  (3.4 s)
+  fold 15: macro F1 0.6258  (2.9 s)
+  CV macro F1 = 0.6267 ± 0.0027  (44 s for CV)
+  TEST macro F1 0.6164  weighted F1 0.8829  accuracy 0.8470  FPR 0.1453
+  train 3.1 s  latency 0.00212 ms/sample (batch), 0.627 ms (single row)  size 1,185 KB
+
+--- Variant A · MLP ---
+  fold  1: macro F1 0.5870  (93.0 s)
+  fold  2: macro F1 0.6643  (78.5 s)
+  fold  3: macro F1 0.5740  (80.4 s)
+  fold  4: macro F1 0.5281  (55.1 s)
+  fold  5: macro F1 0.5567  (54.1 s)
+  fold  6: macro F1 0.5567  (61.0 s)
+  fold  7: macro F1 0.5849  (65.1 s)
+  fold  8: macro F1 0.5426  (44.8 s)
+  fold  9: macro F1 0.5740  (150.1 s)
+  fold 10: macro F1 0.5777  (78.7 s)
+  fold 11: macro F1 0.5602  (97.9 s)
+  fold 12: macro F1 0.5738  (125.4 s)
+  fold 13: macro F1 0.5615  (35.4 s)
+  fold 14: macro F1 0.5769  (45.4 s)
+  fold 15: macro F1 0.5554  (77.3 s)
+  CV macro F1 = 0.5716 ± 0.0302  (1142 s for CV)
+  TEST macro F1 0.5410  weighted F1 0.7275  accuracy 0.6320  FPR 0.4244
+  train 75.3 s  latency 0.00097 ms/sample (batch), 0.273 ms (single row)  size 124 KB
+
+--- Variant B · RandomForest ---
+  fold  1: macro F1 0.8425  (0.7 s)
+  fold  2: macro F1 0.8692  (0.7 s)
+  fold  3: macro F1 0.8486  (0.7 s)
+  fold  4: macro F1 0.8563  (0.7 s)
+  fold  5: macro F1 0.8701  (0.7 s)
+  fold  6: macro F1 0.8814  (0.7 s)
+  fold  7: macro F1 0.8576  (0.7 s)
+  fold  8: macro F1 0.8575  (0.7 s)
+  fold  9: macro F1 0.8123  (0.7 s)
+  fold 10: macro F1 0.8527  (0.7 s)
+  fold 11: macro F1 0.8782  (0.7 s)
+  fold 12: macro F1 0.8545  (0.7 s)
+  fold 13: macro F1 0.8665  (0.7 s)
+  fold 14: macro F1 0.8509  (0.7 s)
+  fold 15: macro F1 0.8307  (0.7 s)
+  CV macro F1 = 0.8553 ± 0.0178  (38 s for CV)
+  TEST macro F1 0.8559  weighted F1 0.9720  accuracy 0.9715  FPR 0.0066
+  train 0.8 s  latency 0.00177 ms/sample (batch), 4.027 ms (single row)  size 42,049 KB
+
+--- Variant B · XGBoost ---
+  fold  1: macro F1 0.8491  (1.8 s)
+  fold  2: macro F1 0.8798  (1.0 s)
+  fold  3: macro F1 0.8669  (1.0 s)
+  fold  4: macro F1 0.8659  (1.1 s)
+  fold  5: macro F1 0.8777  (2.1 s)
+  fold  6: macro F1 0.8891  (1.0 s)
+  fold  7: macro F1 0.8737  (1.1 s)
+  fold  8: macro F1 0.8716  (1.1 s)
+  fold  9: macro F1 0.8241  (1.1 s)
+  fold 10: macro F1 0.8537  (1.1 s)
+  fold 11: macro F1 0.8924  (1.1 s)
+  fold 12: macro F1 0.8699  (1.0 s)
+  fold 13: macro F1 0.8695  (1.1 s)
+  fold 14: macro F1 0.8615  (1.0 s)
+  fold 15: macro F1 0.8477  (1.1 s)
+  CV macro F1 = 0.8662 ± 0.0174  (45 s for CV)
+  TEST macro F1 0.8673  weighted F1 0.9737  accuracy 0.9731  FPR 0.0122
+  train 1.3 s  latency 0.00268 ms/sample (batch), 0.292 ms (single row)  size 1,080 KB
+
+--- Variant B · MLP ---
+  fold  1: macro F1 0.7823  (21.8 s)
+  fold  2: macro F1 0.8099  (10.4 s)
+  fold  3: macro F1 0.7822  (8.0 s)
+  fold  4: macro F1 0.8176  (7.5 s)
+  fold  5: macro F1 0.8162  (16.3 s)
+  fold  6: macro F1 0.8393  (15.8 s)
+  fold  7: macro F1 0.7979  (9.8 s)
+  fold  8: macro F1 0.8031  (8.2 s)
+  fold  9: macro F1 0.7725  (6.9 s)
+  fold 10: macro F1 0.8037  (10.0 s)
+  fold 11: macro F1 0.8340  (11.9 s)
+  fold 12: macro F1 0.7732  (12.7 s)
+  fold 13: macro F1 0.8081  (16.3 s)
+  fold 14: macro F1 0.8184  (13.9 s)
+  fold 15: macro F1 0.7487  (14.2 s)
+  CV macro F1 = 0.8005 ± 0.0247  (213 s for CV)
+  TEST macro F1 0.8030  weighted F1 0.9576  accuracy 0.9556  FPR 0.0564
+  train 20.0 s  latency 0.00071 ms/sample (batch), 0.318 ms (single row)  size 123 KB
+
+========================================================================
+RESULTS
+  saved -> results/phase1/tables/baseline_results.csv (+ .md)
+  saved -> results/phase1/tables/cv_results_detail.csv (+ .md)
+  saved -> results/phase1/tables/per_class_results.csv (+ .md)
+  saved -> results/phase1/tables/feature_importance.csv (+ .md)
+  saved -> results/phase1/tables/ab_comparison.csv (+ .md)
+  saved -> results/phase1/tables/leakage_effect_seen_vs_unseen.csv (+ .md)
+
+Test rows already seen in training vs unseen:
+variant        model   test_subset  rows  share_of_test_pct  macro_f1  accuracy
+      A RandomForest seen_in_train 69092              69.59    0.5455    0.7850
+      A RandomForest        unseen 30198              30.41    0.9091    0.9846
+      A      XGBoost seen_in_train 69092              69.59    0.5533    0.7872
+      A      XGBoost        unseen 30198              30.41    0.8514    0.9837
+      A          MLP seen_in_train 69092              69.59    0.3461    0.4820
+      A          MLP        unseen 30198              30.41    0.8530    0.9754
+      B RandomForest        unseen 32697             100.00    0.8559    0.9715
+      B      XGBoost        unseen 32697             100.00    0.8673    0.9731
+      B          MLP        unseen 32697             100.00    0.8030    0.9556
+
+variant        model     cv_macro_f1  test_macro_f1  test_accuracy  test_fpr  latency_ms_single_row  model_size_kb
+      A RandomForest 0.6206 ± 0.0030         0.6094         0.8457    0.1445                  4.281        48569.5
+      A      XGBoost 0.6267 ± 0.0027         0.6164         0.8470    0.1453                  0.627         1184.8
+      A          MLP 0.5716 ± 0.0302         0.5410         0.6320    0.4244                  0.273          123.5
+      B RandomForest 0.8553 ± 0.0178         0.8559         0.9715    0.0066                  4.027        42049.0
+      B      XGBoost 0.8662 ± 0.0174         0.8673         0.9731    0.0122                  0.292         1080.2
+      B          MLP 0.8005 ± 0.0247         0.8030         0.9556    0.0564                  0.318          123.4
+
+       model  A_test_macro_f1  B_test_macro_f1  delta_A_minus_B   A_cv_macro_f1   B_cv_macro_f1
+RandomForest           0.6094           0.8559          -0.2465 0.6206 ± 0.0030 0.8553 ± 0.0178
+     XGBoost           0.6164           0.8673          -0.2509 0.6267 ± 0.0027 0.8662 ± 0.0174
+         MLP           0.5410           0.8030          -0.2620 0.5716 ± 0.0302 0.8005 ± 0.0247
+  figures saved -> results/phase1/figures/
+  summary -> results/phase1/PHASE1_RESULTS_AUTO.md
+
+TOTAL RUNTIME: 28.8 min

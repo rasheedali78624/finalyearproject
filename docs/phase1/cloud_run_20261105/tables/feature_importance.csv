@@ -1,0 +1,81 @@
+variant,model,feature,importance,group,o2_constraint
+A,RandomForest,tcp.time_delta,0.352872,TCP,mutable
+A,RandomForest,tcp.flags,0.132644,TCP,not yet classified
+A,RandomForest,tcp.len,0.115042,TCP,mutable
+A,RandomForest,mqtt.hdrflags,0.091247,MQTT,not yet classified
+A,RandomForest,mqtt.len,0.086183,MQTT,mutable
+A,RandomForest,mqtt.msgid,0.076284,MQTT,not yet classified
+A,RandomForest,mqtt.msgtype,0.061675,MQTT,immutable
+A,RandomForest,mqtt.qos,0.018214,MQTT,not yet classified
+A,RandomForest,mqtt.conack.val,0.01767,MQTT,not yet classified
+A,RandomForest,mqtt.kalive,0.009988,MQTT,mutable
+A,RandomForest,mqtt.conflags,0.007387,MQTT,immutable
+A,RandomForest,mqtt.conflag.passwd,0.006465,MQTT,not yet classified
+A,RandomForest,mqtt.conflag.uname,0.006401,MQTT,not yet classified
+A,RandomForest,mqtt.protoname,0.004019,MQTT,immutable
+A,RandomForest,mqtt.proto_len,0.002906,MQTT,not yet classified
+A,RandomForest,mqtt.conack.flags,0.002902,MQTT,not yet classified
+A,RandomForest,mqtt.conflag.cleansess,0.002792,MQTT,not yet classified
+A,RandomForest,mqtt.ver,0.00261,MQTT,immutable
+A,RandomForest,mqtt.dupflag,0.001549,MQTT,not yet classified
+A,RandomForest,mqtt.retain,0.001147,MQTT,not yet classified
+A,XGBoost,mqtt.msgid,0.34024,MQTT,not yet classified
+A,XGBoost,tcp.len,0.112623,TCP,mutable
+A,XGBoost,mqtt.kalive,0.107559,MQTT,mutable
+A,XGBoost,mqtt.conflag.uname,0.092804,MQTT,not yet classified
+A,XGBoost,mqtt.hdrflags,0.071794,MQTT,not yet classified
+A,XGBoost,mqtt.conflag.cleansess,0.069313,MQTT,not yet classified
+A,XGBoost,mqtt.conack.val,0.053663,MQTT,not yet classified
+A,XGBoost,tcp.flags,0.035616,TCP,not yet classified
+A,XGBoost,mqtt.retain,0.033902,MQTT,not yet classified
+A,XGBoost,mqtt.len,0.033428,MQTT,mutable
+A,XGBoost,tcp.time_delta,0.021318,TCP,mutable
+A,XGBoost,mqtt.conack.flags,0.018115,MQTT,not yet classified
+A,XGBoost,mqtt.qos,0.007928,MQTT,not yet classified
+A,XGBoost,mqtt.conflag.passwd,0.001698,MQTT,not yet classified
+A,XGBoost,mqtt.conflags,0.0,MQTT,immutable
+A,XGBoost,mqtt.dupflag,0.0,MQTT,not yet classified
+A,XGBoost,mqtt.msgtype,0.0,MQTT,immutable
+A,XGBoost,mqtt.proto_len,0.0,MQTT,not yet classified
+A,XGBoost,mqtt.protoname,0.0,MQTT,immutable
+A,XGBoost,mqtt.ver,0.0,MQTT,immutable
+B,RandomForest,tcp.time_delta,0.274282,TCP,mutable
+B,RandomForest,tcp.len,0.169068,TCP,mutable
+B,RandomForest,mqtt.hdrflags,0.106894,MQTT,not yet classified
+B,RandomForest,mqtt.len,0.098587,MQTT,mutable
+B,RandomForest,mqtt.msgid,0.094291,MQTT,not yet classified
+B,RandomForest,mqtt.msgtype,0.072006,MQTT,immutable
+B,RandomForest,tcp.flags,0.058802,TCP,not yet classified
+B,RandomForest,mqtt.conack.val,0.031865,MQTT,not yet classified
+B,RandomForest,mqtt.qos,0.027089,MQTT,not yet classified
+B,RandomForest,mqtt.kalive,0.017983,MQTT,mutable
+B,RandomForest,mqtt.conflags,0.012093,MQTT,immutable
+B,RandomForest,mqtt.conflag.uname,0.011847,MQTT,not yet classified
+B,RandomForest,mqtt.conflag.passwd,0.00746,MQTT,not yet classified
+B,RandomForest,mqtt.proto_len,0.003167,MQTT,not yet classified
+B,RandomForest,mqtt.protoname,0.003151,MQTT,immutable
+B,RandomForest,mqtt.conack.flags,0.002861,MQTT,not yet classified
+B,RandomForest,mqtt.conflag.cleansess,0.002548,MQTT,not yet classified
+B,RandomForest,mqtt.ver,0.002484,MQTT,immutable
+B,RandomForest,mqtt.retain,0.002,MQTT,not yet classified
+B,RandomForest,mqtt.dupflag,0.001521,MQTT,not yet classified
+B,XGBoost,mqtt.msgid,0.259147,MQTT,not yet classified
+B,XGBoost,mqtt.conflag.uname,0.125752,MQTT,not yet classified
+B,XGBoost,mqtt.conflag.cleansess,0.113116,MQTT,not yet classified
+B,XGBoost,tcp.len,0.106685,TCP,mutable
+B,XGBoost,mqtt.conack.val,0.097704,MQTT,not yet classified
+B,XGBoost,mqtt.retain,0.085415,MQTT,not yet classified
+B,XGBoost,mqtt.kalive,0.076937,MQTT,mutable
+B,XGBoost,mqtt.hdrflags,0.074828,MQTT,not yet classified
+B,XGBoost,tcp.flags,0.012905,TCP,not yet classified
+B,XGBoost,mqtt.conflag.passwd,0.011795,MQTT,not yet classified
+B,XGBoost,tcp.time_delta,0.01159,TCP,mutable
+B,XGBoost,mqtt.conack.flags,0.01049,MQTT,not yet classified
+B,XGBoost,mqtt.qos,0.008045,MQTT,not yet classified
+B,XGBoost,mqtt.len,0.005592,MQTT,mutable
+B,XGBoost,mqtt.conflags,0.0,MQTT,immutable
+B,XGBoost,mqtt.dupflag,0.0,MQTT,not yet classified
+B,XGBoost,mqtt.msgtype,0.0,MQTT,immutable
+B,XGBoost,mqtt.proto_len,0.0,MQTT,not yet classified
+B,XGBoost,mqtt.protoname,0.0,MQTT,immutable
+B,XGBoost,mqtt.ver,0.0,MQTT,immutable

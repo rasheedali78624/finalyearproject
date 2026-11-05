@@ -1,0 +1,38 @@
+| variant | model | class | test_rows | test_unique_vectors | precision | recall | f1 | cv_recall | reliability |
+|---|---|---|---|---|---|---|---|---|---|
+| A | RandomForest | bruteforce | 4351 | 1997 | 0.7274 | 0.6649 | 0.6948 | 0.7193 ± 0.0081 | ok |
+| A | RandomForest | dos | 39077 | 27659 | 0.9821 | 0.8722 | 0.9239 | 0.8739 ± 0.0039 | ok |
+| A | RandomForest | flood | 184 | 94 | 0.0262 | 0.8315 | 0.0508 | 0.8360 ± 0.0249 | LOW: only 94 unique test vectors (<100) |
+| A | RandomForest | legitimate | 49639 | 3969 | 0.9664 | 0.8555 | 0.9076 | 0.8588 ± 0.0060 | ok |
+| A | RandomForest | malformed | 3278 | 1827 | 0.6318 | 0.6376 | 0.6347 | 0.6372 ± 0.0118 | ok |
+| A | RandomForest | slowite | 2761 | 1182 | 0.3041 | 0.8287 | 0.4449 | 0.8949 ± 0.0110 | ok |
+| A | XGBoost | bruteforce | 4351 | 1997 | 0.7391 | 0.7111 | 0.7248 | 0.7680 ± 0.0089 | ok |
+| A | XGBoost | dos | 39077 | 27659 | 0.983 | 0.8723 | 0.9244 | 0.8740 ± 0.0041 | ok |
+| A | XGBoost | flood | 184 | 94 | 0.0258 | 0.8315 | 0.05 | 0.8376 ± 0.0246 | LOW: only 94 unique test vectors (<100) |
+| A | XGBoost | legitimate | 49639 | 3969 | 0.9663 | 0.8547 | 0.907 | 0.8572 ± 0.0057 | ok |
+| A | XGBoost | malformed | 3278 | 1827 | 0.6737 | 0.6254 | 0.6486 | 0.6169 ± 0.0106 | ok |
+| A | XGBoost | slowite | 2761 | 1182 | 0.3031 | 0.828 | 0.4437 | 0.9093 ± 0.0090 | ok |
+| A | MLP | bruteforce | 4351 | 1997 | 0.0968 | 0.7938 | 0.1726 | 0.4637 ± 0.0995 | ok |
+| A | MLP | dos | 39077 | 27659 | 1.0 | 0.7133 | 0.8326 | 0.7164 ± 0.0022 | ok |
+| A | MLP | flood | 184 | 94 | 1.0 | 0.4837 | 0.652 | 0.4833 ± 0.0593 | LOW: only 94 unique test vectors (<100) |
+| A | MLP | legitimate | 49639 | 3969 | 0.9996 | 0.5756 | 0.7305 | 0.6348 ± 0.1043 | ok |
+| A | MLP | malformed | 3278 | 1827 | 0.3347 | 0.4082 | 0.3678 | 0.3769 ± 0.0448 | ok |
+| A | MLP | slowite | 2761 | 1182 | 0.4661 | 0.5176 | 0.4905 | 0.9065 ± 0.1506 | ok |
+| B | RandomForest | bruteforce | 1313 | 1313 | 0.7206 | 0.8271 | 0.7702 | 0.8317 ± 0.0141 | ok |
+| B | RandomForest | dos | 27298 | 27298 | 0.9999 | 0.9922 | 0.996 | 0.9917 ± 0.0005 | ok |
+| B | RandomForest | flood | 80 | 80 | 0.7059 | 0.9 | 0.7912 | 0.9266 ± 0.0236 | LOW: only 80 unique test vectors (<100) |
+| B | RandomForest | legitimate | 1808 | 1808 | 0.9978 | 0.9934 | 0.9956 | 0.9893 ± 0.0042 | ok |
+| B | RandomForest | malformed | 1423 | 1423 | 0.8232 | 0.707 | 0.7607 | 0.7026 ± 0.0108 | ok |
+| B | RandomForest | slowite | 775 | 775 | 0.7369 | 0.929 | 0.8219 | 0.9152 ± 0.0145 | ok |
+| B | XGBoost | bruteforce | 1313 | 1313 | 0.7212 | 0.869 | 0.7883 | 0.8769 ± 0.0172 | ok |
+| B | XGBoost | dos | 27298 | 27298 | 1.0 | 0.9921 | 0.996 | 0.9916 ± 0.0005 | ok |
+| B | XGBoost | flood | 80 | 80 | 0.75 | 0.9 | 0.8182 | 0.9212 ± 0.0234 | LOW: only 80 unique test vectors (<100) |
+| B | XGBoost | legitimate | 1808 | 1808 | 0.995 | 0.9878 | 0.9914 | 0.9877 ± 0.0053 | ok |
+| B | XGBoost | malformed | 1423 | 1423 | 0.8877 | 0.6999 | 0.7827 | 0.6921 ± 0.0087 | ok |
+| B | XGBoost | slowite | 775 | 775 | 0.7277 | 0.9587 | 0.8274 | 0.9333 ± 0.0143 | ok |
+| B | MLP | bruteforce | 1313 | 1313 | 0.7548 | 0.7456 | 0.7502 | 0.8065 ± 0.1140 | ok |
+| B | MLP | dos | 27298 | 27298 | 0.9995 | 0.9919 | 0.9957 | 0.9886 ± 0.0030 | ok |
+| B | MLP | flood | 80 | 80 | 1.0 | 0.825 | 0.9041 | 0.8674 ± 0.0401 | LOW: only 80 unique test vectors (<100) |
+| B | MLP | legitimate | 1808 | 1808 | 0.9919 | 0.9436 | 0.9671 | 0.9247 ± 0.0377 | ok |
+| B | MLP | malformed | 1423 | 1423 | 0.8683 | 0.468 | 0.6082 | 0.5211 ± 0.0937 | ok |
+| B | MLP | slowite | 775 | 775 | 0.4271 | 0.9677 | 0.5927 | 0.8163 ± 0.1481 | ok |

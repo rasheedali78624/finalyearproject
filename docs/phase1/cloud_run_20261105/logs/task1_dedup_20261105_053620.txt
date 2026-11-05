@@ -1,0 +1,96 @@
+========================================================================
+PHASE 1 / TASK 1 — DUPLICATION AND LEAKAGE ANALYSIS
+Run started : 2026-11-05T05:36:05
+Python      : 3.13.18   pandas: 3.0.5
+Data folder : /tmp/claude-0/-home-user-finalyearproject/0ff0c7ba-1f85-5c79-a130-d0103e91f597/scratchpad/data
+========================================================================
+
+Loading files (as exact text)...
+  full    :   330,926 rows x 34 columns
+  train70 :   231,646 rows x 34 columns
+  test30  :    99,290 rows x 34 columns
+  feature columns: 33   label column: 'target'
+
+[1] Constant (zero-variance) columns in the full file
+  found 12 constant columns -> 21 usable features
+  matches brief's list of 12: True
+  saved -> results/phase1/tables/constant_columns.csv  (+ .md)
+
+[2] Do train70 + test30 add up to the full file?
+     class  full_rows  train70_rows  test30_rows  train_plus_test  difference_vs_full  test_share_pct
+bruteforce      14501         10150         4351            14501                   0           30.00
+       dos     130223         91156        39077           130233                  10           30.01
+     flood        613           429          184              613                   0           30.02
+legitimate     165463        115824        49639           165463                   0           30.00
+ malformed      10924          7646         3278            10924                   0           30.01
+   slowite       9202          6441         2761             9202                   0           30.00
+     TOTAL     330926        231646        99290           330936                  10           30.00
+  saved -> results/phase1/tables/split_check.csv  (+ .md)
+
+[3] Duplication per class (full file; feature vector = all columns except label)
+  exact duplicate rows (features + label): 209,499 of 330,926 = 63.31%
+  duplicate feature vectors (label ignored): 210,948 of 330,926 = 63.74%
+  unique feature vectors in whole file: 119,978
+     class  total_rows  unique_rows  duplicate_rows  duplicate_pct flag
+bruteforce       14501         4372           10129          69.85     
+       dos      130223        91024           39199          30.10     
+     flood         613          332             281          45.84     
+legitimate      165463        18374          147089          88.90     
+ malformed       10924         4745            6179          56.56     
+   slowite        9202         2580            6622          71.96     
+  saved -> results/phase1/tables/duplication_per_class.csv  (+ .md)
+
+[4] Label conflicts: identical feature vectors with different labels
+  feature vectors with >1 label: 1,129
+  rows involved: 110,711 of 330,926 = 33.45%
+     class  total_rows  rows_with_conflicting_label  conflict_pct
+bruteforce       14501                         8669         59.78
+       dos      130223                        36521         28.04
+     flood         613                          304         49.59
+legitimate      165463                        60568         36.61
+ malformed       10924                         4649         42.56
+   slowite        9202                            0          0.00
+  UNAVOIDABLE errors for any model (minority-label rows): 18,594 of 330,926 = 5.62%
+  -> best possible accuracy on these features: 94.38%  (a ceiling, measured on all 33 raw columns)
+  label combinations among conflicting vectors (count of vectors):
+    bruteforce + malformed: 697
+    bruteforce + dos + malformed: 208
+    dos + malformed: 88
+    bruteforce + dos: 81
+    bruteforce + dos + legitimate + malformed: 27
+    bruteforce + dos + flood + legitimate + malformed: 13
+    dos + flood + legitimate + malformed: 5
+    bruteforce + dos + flood + malformed: 2
+    bruteforce + dos + flood + legitimate: 2
+    dos + legitimate: 2
+    bruteforce + legitimate: 1
+    flood + legitimate: 1
+    dos + flood + legitimate: 1
+    bruteforce + flood: 1
+  saved -> results/phase1/tables/label_conflicts.csv  (+ .md)
+
+[5] Train/test leakage: test rows whose feature vector appears anywhere in train
+     class  test_rows  leaked_rows  leaked_pct  leaked_with_same_label_in_train
+bruteforce       4351         3412       78.42                             3259
+       dos      39077        12154       31.10                            12107
+     flood        184           93       50.54                               92
+legitimate      49639        46358       93.39                            46358
+ malformed       3278         2356       71.87                             2179
+   slowite       2761         2059       74.57                             2059
+     TOTAL      99290        66432       66.91                            66054
+  (This uses ALL rows of both files and compares whole rows, replacing the earlier sampled 22.6% estimate.)
+  saved -> results/phase1/tables/leakage_per_class.csv  (+ .md)
+
+[6] Text (object) columns — needed to plan encoding
+  dtype counts: {'float64': 26, 'str': 7, 'int64': 1}
+  text feature columns (label excluded): 6
+           column  distinct_values  is_constant                              top3_examples
+        tcp.flags                8        False '0x00000018' ; '0x00000010' ; '0x00000011'
+mqtt.conack.flags                2        False                         '0' ; '0x00000000'
+    mqtt.conflags                4        False          '0' ; '0x00000002' ; '0x000000c2'
+    mqtt.hdrflags               14        False          '0' ; '0x00000030' ; '0x00000040'
+         mqtt.msg            50054        False                          '0' ; '30' ; '31'
+   mqtt.protoname                2        False                               '0' ; 'MQTT'
+  saved -> results/phase1/tables/text_columns.csv  (+ .md)
+
+Finished in 15.0 s

@@ -1,0 +1,9 @@
+variant,model,class_weights,test_macro_f1,test_accuracy,test_fpr,recall_bruteforce,recall_dos,recall_flood,recall_legitimate,recall_malformed,recall_slowite
+A,RandomForest,balanced,0.6094,0.8457,0.1445,0.6649,0.8722,0.8315,0.8555,0.6376,0.8287
+A,RandomForest,none,0.776,0.9214,0.0129,0.7601,0.9086,0.4891,0.9871,0.5915,0.5954
+A,XGBoost,balanced,0.6164,0.847,0.1453,0.7111,0.8723,0.8315,0.8547,0.6254,0.828
+A,XGBoost,none,0.7829,0.9234,0.0129,0.8005,0.9083,0.4728,0.9871,0.5857,0.6161
+B,RandomForest,balanced,0.8559,0.9715,0.0066,0.8271,0.9922,0.9,0.9934,0.707,0.929
+B,RandomForest,none,0.8757,0.9712,0.005,0.7829,0.9937,0.8375,0.995,0.7407,0.8813
+B,XGBoost,balanced,0.8673,0.9731,0.0122,0.869,0.9921,0.9,0.9878,0.6999,0.9587
+B,XGBoost,none,0.8802,0.9724,0.0083,0.8583,0.993,0.8375,0.9917,0.7006,0.9058

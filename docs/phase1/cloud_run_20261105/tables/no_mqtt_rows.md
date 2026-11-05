@@ -1,0 +1,8 @@
+| class | rows | no_mqtt_rows | no_mqtt_pct |
+|---|---|---|---|
+| bruteforce | 14501 | 11580 | 79.86 |
+| dos | 130223 | 36906 | 28.34 |
+| flood | 613 | 310 | 50.57 |
+| legitimate | 165463 | 60717 | 36.7 |
+| malformed | 10924 | 7268 | 66.53 |
+| slowite | 9202 | 7170 | 77.92 |

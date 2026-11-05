@@ -1,0 +1,93 @@
+========================================================================
+PHASE 1 / STEP 2 — FEATURE-SPACE ANALYSIS
+Python 3.13.18  pandas 3.0.5
+Data folder: /tmp/claude-0/-home-user-finalyearproject/0ff0c7ba-1f85-5c79-a130-d0103e91f597/scratchpad/data
+========================================================================
+
+Full file: 330,926 rows. Features kept: 20 (33 - 12 constant - 1 dropped)
+Dropped on purpose: ['mqtt.msg']
+
+[1] Encoding applied to each kept column
+                column                                     rule  distinct_raw  distinct_encoded field_group
+             tcp.flags hex -> integer; plain '0' (absent) -> -1             8                 8         TCP
+        tcp.time_delta                          numeric (float)         10514             10514         TCP
+               tcp.len                          numeric (float)           773               773         TCP
+     mqtt.conack.flags hex -> integer; plain '0' (absent) -> -1             2                 2        MQTT
+       mqtt.conack.val                          numeric (float)             2                 2        MQTT
+mqtt.conflag.cleansess                          numeric (float)             2                 2        MQTT
+   mqtt.conflag.passwd                          numeric (float)             2                 2        MQTT
+    mqtt.conflag.uname                          numeric (float)             2                 2        MQTT
+         mqtt.conflags hex -> integer; plain '0' (absent) -> -1             4                 4        MQTT
+          mqtt.dupflag                          numeric (float)             2                 2        MQTT
+         mqtt.hdrflags hex -> integer; plain '0' (absent) -> -1            14                14        MQTT
+           mqtt.kalive                          numeric (float)             7                 7        MQTT
+              mqtt.len                          numeric (float)            92                92        MQTT
+            mqtt.msgid                          numeric (float)          9999              9999        MQTT
+          mqtt.msgtype                          numeric (float)            11                11        MQTT
+        mqtt.proto_len                          numeric (float)             2                 2        MQTT
+        mqtt.protoname         category map {'0': 0, 'MQTT': 1}             2                 2        MQTT
+              mqtt.qos                          numeric (float)             2                 2        MQTT
+           mqtt.retain                          numeric (float)             2                 2        MQTT
+              mqtt.ver                          numeric (float)             2                 2        MQTT
+  saved -> results/phase1/tables/encoding_report.csv (+ .md)
+
+[2] Rows with no MQTT header (mqtt.hdrflags == '0' in the raw file)
+     class   rows  no_mqtt_rows  no_mqtt_pct
+bruteforce  14501         11580        79.86
+       dos 130223         36906        28.34
+     flood    613           310        50.57
+legitimate 165463         60717        36.70
+ malformed  10924          7268        66.53
+   slowite   9202          7170        77.92
+  all rows with no MQTT header: 123,951 of 330,926 = 37.46%
+  of the 115,447 rows in a label conflict, 115,324 (99.89%) have no MQTT header
+  of the 215,479 rows NOT in a conflict, 8,627 (4.0%) have no MQTT header
+  saved -> results/phase1/tables/no_mqtt_rows.csv (+ .md)
+
+[3] Duplication in the final 20-feature space (full file)
+     class  total_rows  unique_rows  duplicate_pct flag
+bruteforce       14501         4372          69.85     
+       dos      130223        90988          30.13     
+     flood         613          266          56.61     
+legitimate      165463         6023          96.36     
+ malformed       10924         4744          56.57     
+   slowite        9202         2580          71.96     
+  unique feature vectors: 107,129 of 330,926
+  saved -> results/phase1/tables/fs_duplication_per_class.csv (+ .md)
+
+[4] Label conflicts and error floor in the final feature space
+  vectors with >1 label: 1,335; rows involved: 115,447 = 34.89%
+  UNAVOIDABLE errors: 22,278 = 6.73%  ->  best possible accuracy 93.27%
+     class   rows  rows_in_conflict  conflict_pct
+bruteforce  14501              8710         60.06
+       dos 130223             36711         28.19
+     flood    613               306         49.92
+legitimate 165463             60568         36.61
+ malformed  10924              4779         43.75
+   slowite   9202              4373         47.52
+  saved -> results/phase1/tables/fs_label_conflicts.csv (+ .md)
+
+[5] Variant A leakage in the final feature space
+     class  test_rows  leaked_rows  leaked_pct
+bruteforce       4351         3421       78.63
+       dos      39077        12192       31.20
+     flood        184          121       65.76
+legitimate      49639        48859       98.43
+ malformed       3278         2376       72.48
+   slowite       2761         2123       76.89
+     TOTAL      99290        69092       69.59
+  saved -> results/phase1/tables/fs_leakage_per_class.csv (+ .md)
+
+[6] Variant B (de-duplicated, grouped + stratified split)
+     class  train_rows  test_rows  test_share_pct                 flag
+bruteforce        3059       1313           30.03                     
+       dos       63690      27298           30.00                     
+     flood         186         80           30.08 FEW TEST ROWS (<100)
+legitimate        4215       1808           30.02                     
+ malformed        3321       1423           30.00                     
+   slowite        1805        775           30.04                     
+     TOTAL       76276      32697           30.00                     
+  test rows whose feature vector appears in Variant B train: 0 (must be 0)
+  saved -> results/phase1/tables/variant_b_summary.csv (+ .md)
+
+Finished in 42.4 s

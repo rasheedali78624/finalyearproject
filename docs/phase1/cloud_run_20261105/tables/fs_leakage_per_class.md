@@ -1,0 +1,9 @@
+| class | test_rows | leaked_rows | leaked_pct |
+|---|---|---|---|
+| bruteforce | 4351 | 3421 | 78.63 |
+| dos | 39077 | 12192 | 31.2 |
+| flood | 184 | 121 | 65.76 |
+| legitimate | 49639 | 48859 | 98.43 |
+| malformed | 3278 | 2376 | 72.48 |
+| slowite | 2761 | 2123 | 76.89 |
+| TOTAL | 99290 | 69092 | 69.59 |

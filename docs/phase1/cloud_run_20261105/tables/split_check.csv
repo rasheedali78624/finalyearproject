@@ -1,0 +1,8 @@
+class,full_rows,train70_rows,test30_rows,train_plus_test,difference_vs_full,test_share_pct
+bruteforce,14501,10150,4351,14501,0,30.0
+dos,130223,91156,39077,130233,10,30.01
+flood,613,429,184,613,0,30.02
+legitimate,165463,115824,49639,165463,0,30.0
+malformed,10924,7646,3278,10924,0,30.01
+slowite,9202,6441,2761,9202,0,30.0
+TOTAL,330926,231646,99290,330936,10,30.0
