@@ -106,7 +106,7 @@ def main():
         log(f"  Variant {v['name']}: train {len(v['y_train']):,}  test {len(v['y_test']):,}  "
             f"features {v['X_train'].shape[1]}")
 
-    cv_rows, test_rows, class_rows, imp_rows = [], [], [], []
+    cv_rows, test_rows, class_rows, imp_rows, leak_rows = [], [], [], [], []
     preds = {}
 
     for v in variants:
@@ -146,6 +146,17 @@ def main():
             s = ev.scores(yte, yp, classes)
             preds[(v["name"], m)] = (yte, yp)
             lat_b, lat_1 = ev.latency_ms(model, Xte)
+            # Leakage effect: score test rows the model has SEEN in training
+            # (identical feature vector in train) separately from UNSEEN rows.
+            seen = te_keys.isin(set(row_key(v["X_train"], feats))).to_numpy()
+            for part, mask in (("seen_in_train", seen), ("unseen", ~seen)):
+                if mask.sum():
+                    ps = ev.scores(yte[mask], yp[mask], classes)
+                    leak_rows.append({"variant": v["name"], "model": m, "test_subset": part,
+                                      "rows": int(mask.sum()),
+                                      "share_of_test_pct": round(100 * mask.mean(), 2),
+                                      "macro_f1": round(ps["macro_f1"], 4),
+                                      "accuracy": round(ps["accuracy"], 4)})
             size_kb = ev.save_model(model, config.MODELS_DIR / f"{m}_variant{v['name']}.joblib")
             log(f"  TEST macro F1 {s['macro_f1']:.4f}  weighted F1 {s['weighted_f1']:.4f}  "
                 f"accuracy {s['accuracy']:.4f}  FPR {s['fpr']:.4f}")
@@ -210,6 +221,10 @@ def main():
                    "A_cv_macro_f1": a.cv_macro_f1, "B_cv_macro_f1": b.cv_macro_f1})
     ab_df = pd.DataFrame(ab)
     save_table(ab_df, "ab_comparison", log)
+    leak_df = pd.DataFrame(leak_rows)
+    save_table(leak_df, "leakage_effect_seen_vs_unseen", log)
+    log("\nTest rows already seen in training vs unseen:")
+    log(leak_df.to_string(index=False))
     log("\n" + base[["variant", "model", "cv_macro_f1", "test_macro_f1", "test_accuracy",
                      "test_fpr", "latency_ms_single_row", "model_size_kb"]].to_string(index=False))
     log("\n" + ab_df.to_string(index=False))
@@ -233,6 +248,7 @@ def main():
           "Test sets used once.", "",
           "Headline metric: macro F1. Accuracy is shown only for comparison with the literature.", "",
           "## A vs B", "", to_markdown(ab_df)]
+    md += ["## Seen vs unseen test rows", "", to_markdown(leak_df)]
     md += ["## All results", "", to_markdown(base), "## Per-class (test set)", "", to_markdown(pc),
            "Rows marked LOW have too few unique test vectors for a reliable per-class estimate.", ""]
     (config.RESULTS_DIR / "PHASE1_RESULTS_AUTO.md").write_text("\n".join(md))

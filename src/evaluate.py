@@ -48,17 +48,26 @@ def latency_ms(model, X, repeats=3, single_rows=200):
     """
     Two latency figures, in milliseconds per sample:
       batch  : predict the whole test set at once, divide by rows (median of repeats)
-      single : predict one row at a time (like a live IDS), median over `single_rows`
+      single : predict one row at a time (like a live IDS), single thread,
+               median over `single_rows`
     Timing varies slightly between runs and machines; it is NOT bit-for-bit reproducible.
     """
     Xn = np.asarray(X)
     batch = []
     for _ in range(repeats):
         t = time.perf_counter(); model.predict(Xn); batch.append(time.perf_counter() - t)
+    # One packet at a time: use a single thread, as parallel start-up costs
+    # would otherwise dominate (and a small IoT gateway may have one core).
+    inner = model[-1] if hasattr(model, "steps") else model
+    old_jobs = getattr(inner, "n_jobs", None)
+    if old_jobs is not None:
+        inner.set_params(n_jobs=1)
     single = []
     for i in range(min(single_rows, len(Xn))):
         row = Xn[i:i + 1]
         t = time.perf_counter(); model.predict(row); single.append(time.perf_counter() - t)
+    if old_jobs is not None:
+        inner.set_params(n_jobs=old_jobs)
     return 1000 * np.median(batch) / len(Xn), 1000 * float(np.median(single))
 
 
