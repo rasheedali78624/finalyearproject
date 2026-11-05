@@ -1,21 +1,31 @@
 # Phase 1 Findings — Baseline Detection on MQTTset (Objective O1)
 
-**Status: draft from the cloud verification run, 5 Nov 2026.** Every number
-below was produced by the code in `src/`, run in the cloud session on
-Rasheed's uploaded copies of the three MQTTset files. Those copies were first
-shown to be identical to the Mac copies: Task 1 output matched the Mac log line
-for line.
-**Before quoting any number, re-run on the Mac and check it matches.** The
-classification numbers should match exactly. Latency and training time will
-differ, because they depend on the machine.
+**Status: confirmed on Rasheed's MacBook, 5 Nov 2026.** The main results and
+cost figures below are from the **Mac run** (official). The sensitivity checks
+(§3) are from the cloud run on identical copies of the data; they still need
+re-running on the Mac (see §7).
 
-| Run | Log (cloud) | Settings |
-|---|---|---|
-| Main pipeline | `cloud_run_20261105/logs/phase1_run_20261105_060455.txt` | 5-fold CV × 3 repeats, seed 42, 28.8 min on 4 CPU cores |
-| Sensitivity checks | `cloud_run_20261105/logs/sensitivity_checks_20261105_060638.txt` | Class weighting on/off; Variant A test-row groups |
+| Run | Log | Machine | Settings |
+|---|---|---|---|
+| **Main pipeline (official)** | `mac_run_20261105/phase1_run_20261105_144354.txt` | MacBook Pro, Apple Silicon, 10 cores, macOS 27.0.1 | 5-fold CV × 3 repeats, seed 42; **10.5 min** |
+| Main pipeline (cloud check) | `cloud_run_20261105/logs/phase1_run_20261105_060455.txt` | Linux, 4 cores | Same settings; 28.8 min |
+| Sensitivity checks (cloud) | `cloud_run_20261105/logs/sensitivity_checks_20261105_060638.txt` | Linux, 4 cores | Class weighting on/off; Variant A test-row groups |
 
-Reproducibility: the main pipeline was run twice, once with 1 CV repeat and
-once with 3. All six held-out test results were **identical** in both runs.
+Libraries on the Mac: Python 3.14.2, numpy 2.5.4, pandas 3.0.6, scikit-learn
+1.9.1, xgboost 3.4.1.
+
+**Reproducibility across machines:**
+- **Random Forest and XGBoost, both variants: every cross-validation and test
+  number is identical** on the Mac and in the cloud.
+- **MLP on Variant B: identical.**
+- **MLP on Variant A: different.** Test macro F1 is 0.5837 on the Mac against
+  0.5410 in the cloud; CV is 0.5786 ± 0.0399 against 0.5716 ± 0.0302. The cloud
+  gave the same MLP result on two separate runs; the Mac has been run once so
+  far. The
+  likely cause is tiny floating-point differences between Apple Silicon and Intel
+  maths libraries: the MLP training on Variant A is unstable (it has the largest
+  fold-to-fold spread of any model), so small differences grow. This is an
+  explanation, not a measurement. **The Mac figures are the official ones.**
 
 ---
 
@@ -43,7 +53,7 @@ once with 3. All six held-out test results were **identical** in both runs.
 |---|---|---|---|---|---|---|
 | A | Random Forest | 0.6206 ± 0.0030 | **0.6094** | 0.8812 | 0.8457 | 0.1445 |
 | A | XGBoost | 0.6267 ± 0.0027 | **0.6164** | 0.8829 | 0.8470 | 0.1453 |
-| A | MLP | 0.5716 ± 0.0302 | **0.5410** | 0.7275 | 0.6320 | 0.4244 |
+| A | MLP | 0.5786 ± 0.0399 | **0.5837** | 0.7602 | 0.6551 | 0.3734 |
 | B | Random Forest | 0.8553 ± 0.0178 | **0.8559** | 0.9720 | 0.9715 | 0.0066 |
 | B | XGBoost | 0.8662 ± 0.0174 | **0.8673** | 0.9737 | 0.9731 | 0.0122 |
 | B | MLP | 0.8005 ± 0.0247 | **0.8030** | 0.9576 | 0.9556 | 0.0564 |
@@ -54,8 +64,8 @@ FPR = share of `legitimate` test rows flagged as any attack.
   and the MLP is clearly weaker.
 - Cross-validation and test scores agree closely, so the test sets are not
   unusually easy or hard.
-- The MLP on Variant A is unstable (largest fold-to-fold spread) and raises many
-  false alarms (FPR 0.42).
+- The MLP on Variant A is unstable (largest fold-to-fold spread, folds range
+  0.5281–0.6663) and raises many false alarms (FPR 0.3734).
 
 Per-class results are in `tables/per_class_results`. Two examples, XGBoost
 recall on the test set:
@@ -148,17 +158,18 @@ Same models, retrained **without** class weights (the setting most papers use):
 
 ## 4. Cost results (for O4)
 
-Measured on the cloud machine (4 cores). **These figures will differ on the
-Mac**; use the Mac run for the report.
+Measured on the MacBook (official run). Timing numbers vary a little from run
+to run.
 
-| Model | Size on disk | Latency, one packet at a time | Latency, batch (per packet) | Training time (A / B) |
+| Model | Size on disk (A / B) | Latency, one packet at a time (A / B) | Latency, batch, per packet (A / B) | Training time (A / B) |
 |---|---|---|---|---|
-| Random Forest | 42,049–48,569 KB | 4.03–4.28 ms | 0.0017–0.0018 ms | 2.6 s / 0.8 s |
-| XGBoost | 1,080–1,185 KB | 0.29–0.63 ms | 0.0021–0.0027 ms | 3.1 s / 1.3 s |
-| MLP | 123–124 KB | 0.27–0.32 ms | 0.0007–0.0010 ms | 75.3 s / 20.0 s |
+| Random Forest | 48,573 / 42,049 KB | 3.023 / 2.985 ms | 0.00091 / 0.00122 ms | 1.0 / 0.3 s |
+| XGBoost | 1,185 / 1,080 KB | 0.103 / 0.106 ms | 0.00062 / 0.00076 ms | 2.2 / 1.4 s |
+| MLP | 124 / 123 KB | 0.163 / 0.164 ms | 0.00021 / 0.00022 ms | 29.6 / 7.0 s |
 
 - **XGBoost gives the best accuracy for its cost.** It is about 40 times smaller
-  than Random Forest and about 7–14 times faster one packet at a time.
+  than Random Forest and about 28–29 times faster one packet at a time
+  (*derived*).
 - The MLP is the smallest and fastest to run, but the least accurate.
 
 ## 5. Feature importance (input to O2)
@@ -197,10 +208,11 @@ Figures `importance_RandomForest_variant*.png` and
 
 ## 7. Still uncertain / not measured
 
-- All numbers: **awaiting confirmation on the Mac.**
-- Latency and model size on the Mac (the figures above are from the cloud).
-- Total runtime on the Mac. It was 28.8 min on 4 cloud cores, so it should be
-  faster on an Apple Silicon MacBook, but that is not measured.
+- The sensitivity checks (§3a, §3b) have not been re-run on the Mac yet. For
+  Random Forest and XGBoost the main results matched the cloud exactly, so they
+  are expected to match, but that is not yet confirmed.
+- Why the MLP on Variant A differs between machines (a likely explanation is
+  given above, not measured).
 - Which MQTTset file and features each cited 97–99% paper used.
 - Hyperparameters were not tuned (by design, per the brief). Tuned models could
   score differently.
@@ -209,13 +221,13 @@ Figures `importance_RandomForest_variant*.png` and
 
 | Criterion | Status |
 |---|---|
-| `python3 src/run_phase1.py` runs end to end | ✅ cloud; ⏳ Mac |
+| `python3 src/run_phase1.py` runs end to end | ✅ Mac and cloud |
 | Per-class unique counts, all 6 classes | ✅ |
 | Precise leakage, % of test rows, per class | ✅ |
 | 3 models × 2 variants = 6 result sets | ✅ |
 | Every F7 metric for every combination | ✅ |
 | Mean ± standard deviation | ✅ (15 folds) |
-| Fixed seeds, identical on rerun | ✅ test results identical across two runs |
+| Fixed seeds, identical on rerun | ✅ identical on rerun on the same machine; across machines all identical except MLP on Variant A |
 | `requirements.txt` with exact versions | ✅ written by each run; commit the Mac one |
 | No number not produced by this code | ✅ |
-| Runtime under ~30 min | ✅ 28.8 min (cloud); ⏳ Mac |
+| Runtime under ~30 min | ✅ 10.5 min on the Mac |

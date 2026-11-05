@@ -755,7 +755,7 @@ a{color:var(--accent)}
   <p class="sub">Step 2 and the model results, in plain words.</p>
   <div class="box careful">
     <span class="k">Where these numbers come from</span>
-    <p>The Phase 1 code was run in the cloud session on your uploaded copies of the three CSV files. Those copies gave exactly the same Task 1 output as your Mac. You still need to run it once on your Mac so the official numbers are your own. They should match exactly, except the timing numbers.</p>
+    <p>These are from <strong>your own Mac run</strong> on 5 Nov (10.5 minutes). The cloud run on the same data gave identical numbers for Random Forest and XGBoost. Only the MLP on Variant A came out slightly different on the two machines, because its training is unstable (see the findings document). The class-weight and three-group checks below come from the cloud run; rerun <code>sensitivity_checks.py</code> on your Mac to confirm them.</p>
   </div>
 
   <h3>Step 2: preparing the data</h3>
@@ -779,7 +779,7 @@ a{color:var(--accent)}
     <tbody>
       <tr><td>XGBoost (best)</td><td class="n">0.6164</td><td class="n">0.8673</td></tr>
       <tr><td>Random Forest</td><td class="n">0.6094</td><td class="n">0.8559</td></tr>
-      <tr><td>MLP</td><td class="n">0.5410</td><td class="n">0.8030</td></tr>
+      <tr><td>MLP</td><td class="n">0.5837</td><td class="n">0.8030</td></tr>
     </tbody>
   </table></div>
   <p>Held-out test set, balanced class weights. Cross-validation gave almost the same numbers, for example XGBoost on B: 0.8662 ± 0.0174 over 15 folds.</p>
@@ -810,11 +810,11 @@ a{color:var(--accent)}
   <h3>The message ID clue (for Phase 2)</h3>
   <p>XGBoost's most important feature on B is <code>mqtt.msgid</code>. It is 0 in every <code>legitimate</code>, <code>flood</code>, <code>slowite</code> and <code>bruteforce</code> row, but non-zero in most <code>dos</code> rows. MQTT only adds a message ID when a message is sent with QoS 1 or 2, so in this dataset DoS traffic uses QoS above 0. An attacker can simply choose QoS 0. That is a ready-made evasion to test in Phase 2.</p>
 
-  <h3>Cost (for O4, cloud machine, will differ on your Mac)</h3>
+  <h3>Cost (for O4, measured on your Mac)</h3>
   <ul>
-    <li><strong>XGBoost:</strong> about 1.1 MB, 0.3–0.6 ms per packet. Best balance.</li>
-    <li><strong>Random Forest:</strong> 42–49 MB, about 4 ms per packet.</li>
-    <li><strong>MLP:</strong> about 124 KB, 0.3 ms per packet, but the least accurate.</li>
+    <li><strong>XGBoost:</strong> about 1.1 MB, about 0.10 ms per packet. Best balance.</li>
+    <li><strong>Random Forest:</strong> 42–49 MB, about 3 ms per packet.</li>
+    <li><strong>MLP:</strong> about 124 KB, about 0.16 ms per packet, but the least accurate.</li>
   </ul>
   <p>Unreliable: <code>flood</code> has only 94 (A) and 80 (B) unique test packets, below the 100 line, so its per-class scores are marked unreliable.</p>
 </section>
