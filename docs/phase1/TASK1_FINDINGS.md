@@ -1,8 +1,10 @@
 # Phase 1 · Task 1 — Duplication and Leakage Findings
 
 **Source of every number below:** `src/dedup_analysis.py`, run by Rasheed on his
-MacBook on 5 Nov 2026 (log `results/phase1/logs/task1_dedup_20261105_124023.txt`,
-Python 3.14.2, pandas 3.0.6, runtime 10.3 s).
+MacBook on 5 Nov 2026 (logs `results/phase1/logs/task1_dedup_20261105_124023.txt`
+and `task1_dedup_20261105_124629.txt`, Python 3.14.2, pandas 3.0.6).
+The second run added the error-floor calculation (§4); every number common to
+both runs was identical, so the analysis is reproducible.
 Numbers marked *derived* are simple arithmetic on logged values.
 
 **To reproduce:** `source ~/Downloads/P1/.venv/bin/activate`, then
@@ -76,10 +78,20 @@ frequent label, so only the *minority-label* rows are unavoidable errors.
 For example, a vector seen 1,000× as `legitimate` and 5× as `dos` costs
 only 5 errors.
 
-**Unavoidable error rate (error floor):** *not measured yet.* The
-calculation was added to `src/dedup_analysis.py` after the 5 Nov run; the
-script must be re-run to fill this in. **Do not quote 33.45% as an error
-rate.**
+**Unavoidable error rate (error floor), measured:** **18,594 rows =
+5.62%** of the dataset carry a label that differs from the most frequent
+label of their feature vector. No model can get these right, so the **best
+possible accuracy on these 33 raw features is 94.38%** (log of 12:46 run).
+**Do not quote 33.45% as an error rate; the floor is 5.62%.**
+
+Caveats on the 94.38% ceiling:
+- It is computed over the whole file. A ceiling for a particular test split
+  could differ slightly; that has not been measured.
+- It applies to `mqttdataset_reduced.csv` with these 33 columns only. Published
+  studies may have used other MQTTset files (e.g. the full or augmented
+  versions) or other features, so it cannot be applied directly to their
+  reported figures without checking what each study used.
+- It will change once `mqtt.msg` is dropped and hex values are encoded (Task 2).
 
 **Not yet verified (hypothesis only):** these rows may be packets with no
 MQTT layer, such as TCP ACKs and handshakes. All their MQTT fields would then
@@ -145,7 +157,8 @@ thing as a present field whose value is 0. Encoding must keep that distinction
 ## Still uncertain
 
 - The cause of the label conflicts (hypothesis in §4, not yet tested).
-- The unavoidable error rate caused by the conflicts (needs a re-run, §4).
+- Whether published 97–99% results used this exact file and feature set
+  (needed before comparing them with the 94.38% ceiling).
 - How much duplication, conflict and leakage remain after encoding and after
   dropping `mqtt.msg` (Task 2).
 - Why the split files contain 10 more `dos` rows than the full file.
