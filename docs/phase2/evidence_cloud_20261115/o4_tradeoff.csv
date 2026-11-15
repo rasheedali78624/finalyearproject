@@ -1,0 +1,7 @@
+model,variant,clean_macro_f1,robustness_pct,latency_ms_per_packet,model_size_kb
+RandomForest,baseline,0.8559,95.08,5.305,42049.0
+RandomForest,defended,0.8572,99.98,4.833,42257.1
+XGBoost,baseline,0.8673,70.36,0.257,1080.2
+XGBoost,defended,0.8705,99.85,0.271,1085.8
+MLP,baseline,0.803,24.29,0.321,123.4
+MLP,defended,0.8151,92.32,0.307,123.1

@@ -1,0 +1,22 @@
+========================================================================
+PHASE 4 (O4) — ROBUSTNESS / ACCURACY / COST  (constraint set: extended)
+========================================================================
+  RandomForest baseline   F1 0.8559  robustness 95.08%  latency 5.305 ms  size 42,049 KB
+  RandomForest defended   F1 0.8572  robustness 99.98%  latency 4.833 ms  size 42,257 KB
+  XGBoost      baseline   F1 0.8673  robustness 70.36%  latency 0.257 ms  size 1,080 KB
+  XGBoost      defended   F1 0.8705  robustness 99.85%  latency 0.271 ms  size 1,086 KB
+  MLP          baseline   F1 0.8030  robustness 24.29%  latency 0.321 ms  size 123 KB
+  MLP          defended   F1 0.8151  robustness 92.32%  latency 0.307 ms  size 123 KB
+  saved -> results/phase1/tables/o4_tradeoff.csv (+ .md)
+  figure -> results/phase1/figures/o4_tradeoff.png
+
+       model  variant  clean_macro_f1  robustness_pct  latency_ms_per_packet  model_size_kb
+RandomForest baseline          0.8559           95.08                  5.305        42049.0
+RandomForest defended          0.8572           99.98                  4.833        42257.1
+     XGBoost baseline          0.8673           70.36                  0.257         1080.2
+     XGBoost defended          0.8705           99.85                  0.271         1085.8
+         MLP baseline          0.8030           24.29                  0.321          123.4
+         MLP defended          0.8151           92.32                  0.307          123.1
+
+Total 5.2 min
+Full log saved -> results/phase1/logs/phase4_tradeoff_20261115_124250.txt
