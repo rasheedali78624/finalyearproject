@@ -146,7 +146,7 @@ def main():
                     f"(change {h_f1-base_f1:+.4f}); adaptive re-attack ASR {h_asr}%")
 
     df = pd.DataFrame(rows)
-    save_table(df, "o3_defence_results", log)
+    save_table(df, "o3_defence_results", log, subdir="phase3")
     log("\n" + df.to_string(index=False))
     log(f"\nTotal {(time.time()-t0)/60:.1f} min")
     log.save()

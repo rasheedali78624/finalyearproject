@@ -84,7 +84,7 @@ def main():
                 f"robustness {rob}%  latency {lat_1:.3f} ms  size {size_kb:,.0f} KB")
 
     df = pd.DataFrame(rows)
-    save_table(df, "o4_tradeoff", log)
+    save_table(df, "o4_tradeoff", log, subdir="phase4")
 
     # scatter: robustness (x) vs clean F1 (y); marker size ~ model size; arrow base->defended
     fig, ax = plt.subplots(figsize=(7.5, 5.5))

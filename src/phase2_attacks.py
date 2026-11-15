@@ -183,7 +183,7 @@ def main():
             "attack_success_rate", "clean_recall", "adversarial_recall",
             "recall_degradation", "mean_queries", "mean_fields_changed"]
     df = df[[c for c in cols if c in df.columns]]
-    save_table(df, "o2_attack_results", log)
+    save_table(df, "o2_attack_results", log, subdir="phase2")
     log("\n" + df.to_string(index=False))
     log(f"\nTotal {(time.time()-t0)/60:.1f} min")
     log.save()

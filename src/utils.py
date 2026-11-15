@@ -38,12 +38,15 @@ def to_markdown(df):
     return "\n".join(lines) + "\n"
 
 
-def save_table(df, name, log=print):
-    """Save one table as CSV (for code) and Markdown (for the report)."""
+def save_table(df, name, log=print, subdir="phase1"):
+    """Save one table as CSV (for code) and Markdown (for the report).
+    subdir selects results/<subdir>/tables (default phase1 for Phase 1 tables)."""
     config.ensure_output_dirs()
-    df.to_csv(config.TABLES_DIR / f"{name}.csv", index=False)
-    (config.TABLES_DIR / f"{name}.md").write_text(to_markdown(df))
-    log(f"  saved -> results/phase1/tables/{name}.csv (+ .md)")
+    out = config.PROJECT_ROOT / "results" / subdir / "tables"
+    out.mkdir(parents=True, exist_ok=True)
+    df.to_csv(out / f"{name}.csv", index=False)
+    (out / f"{name}.md").write_text(to_markdown(df))
+    log(f"  saved -> results/{subdir}/tables/{name}.csv (+ .md)")
 
 
 def row_key(df, cols):
