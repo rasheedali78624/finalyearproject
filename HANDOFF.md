@@ -1,7 +1,7 @@
 # Project Handoff — read this first
 
 **For:** a fresh assistant session with no prior context.
-**Updated:** 15 November 2026. **Branch:** `claude/amazing-hopper-glemny`.
+**Updated:** 15 November 2026. **Branch:** `claude/friendly-dijkstra-0h6cpk` (continues `claude/amazing-hopper-glemny`).
 
 This repository is a Master of Cyber Security research project. Objectives O1–O4
 are all implemented and have run on the real data. This document is the complete
@@ -75,8 +75,9 @@ a defence. Four objectives:
 ## 6. What is done, with the key numbers
 
 All numbers are from cloud runs on verified-identical data; the Mac reproduced
-Phase 1 exactly. **Confirm O2–O4 on the Mac** (classification numbers should
-match; latency differs by machine).
+Phase 1 exactly and, on 15 Nov 2026, O2–O4 as well (tables in
+`docs/phase2/mac_run_20261115/`; only difference RF/report adaptive ASR 2.57%
+vs 2.55%). Latency figures are the Mac's.
 
 **O1 (Phase 1):** XGBoost is best. Macro F1 on Variant B: XGBoost 0.8673, RF
 0.8559, MLP 0.8030. On MQTT-only packets, XGBoost reaches 0.979. Full detail in
@@ -88,11 +89,12 @@ fragile (flipped by one field); tree ensembles resist. Adding QoS/retain
 ("extended" set) barely changes this. `docs/phase2/O2_O4_FINDINGS.md`.
 
 **O3 (defence):** adversarial training cuts adaptive re-attack success to ≤0.2%
-(trees) / ~7% (MLP) at no clean-accuracy cost (it rises slightly). Feature
-hardening gives no benefit here (honest negative result).
+(XGBoost), 0.02% extended / 2.57% report (Random Forest) and ~7% (MLP); clean
+macro F1 stays within ±0.001 or rises. Feature hardening gives no benefit in
+five of six model/set pairs (exception: MLP/extended, 3.37% vs 7.88%).
 
 **O4 (trade-off):** XGBoost adversarially trained is the best operating point —
-clean F1 0.871, robustness 99.85%, 1.1 MB, 0.26 ms/packet. Figure
+clean F1 0.871, robustness 99.85%, 1.1 MB, 0.10 ms/packet (Mac). Figure
 `results/phase1/figures/o4_tradeoff.png`.
 
 ## 7. File map (`src/`)
@@ -148,7 +150,7 @@ Outputs go to `results/phaseN/tables`, `results/phase1/figures`, `results/phase1
 - Four Phase-1 decisions still to confirm with Dr. Bryan: headline framing,
   class weighting, dropping `mqtt.msg`, the small `flood` class (see
   `PHASE1_FINDINGS.md` §6).
-- Confirm O2–O4 numbers on the Mac and run the Mosquitto validity check.
+- O2–O4 confirmed on the Mac (15 Nov). Still to do: the Mosquitto validity check.
 - Report corrections needed (see `CONSTRAINT_TABLE.md` and direction review):
   33→20 features, 7→6 text columns, 22.6%→69.59% leakage, `mqtt.conflags` and
   `tcp.len` are *dependent* not immutable/mutable.
@@ -157,7 +159,7 @@ Outputs go to `results/phaseN/tables`, `results/phase1/figures`, `results/phase1
 
 ## 11. Git / attribution
 
-- Develop on `claude/amazing-hopper-glemny`, commit and push there.
+- Develop on the branch the current session is assigned (latest: `claude/friendly-dijkstra-0h6cpk`), commit and push there.
 - The cloud session's `.git/info/exclude` hides `results/` and the dataset; the
   Mac run regenerates results locally.
 - End commit messages with the Co-Authored-By / Claude-Session lines the harness

@@ -3,8 +3,10 @@
 **Source:** `src/phase2_attacks.py`, `src/phase3_defence.py`,
 `src/phase4_tradeoff.py`, run 15 Nov 2026 in the cloud session on Rasheed's
 uploaded MQTTset copies (verified identical to his Mac copies in Phase 1).
-Fixed seed 42. **Re-run on the Mac to confirm before quoting** (classification
-numbers should match; latency will differ by machine).
+Fixed seed 42. **Confirmed on Rasheed's Mac on 15 Nov 2026** — tables in
+`mac_run_20261115/`. O2 and O4 classification numbers are identical; the one O3
+difference is RF/report adaptive ASR (Mac 2.57%, cloud 2.55%). Latency below is
+the Mac measurement.
 
 Reproduce: `python3 src/run_phase2to4.py`. Read `O2_O4_DESIGN.md` first for how
 each number is produced. All attacks target the models trained on **Variant B**
@@ -23,10 +25,11 @@ each number is produced. All attacks target the models trained on **Variant B**
    "extended" attack is within ~1 point of the "report" attack everywhere. This
    *tempers* the Phase 1 hypothesis that the QoS shortcut alone would break them.
 3. **Adversarial training is cheap and highly effective.** After it, a *fresh*
-   (adaptive) attack succeeds on **≤0.2%** of tree-model attacks and **~7%** of
-   MLP attacks, while clean macro F1 does not fall (it rises slightly).
+   (adaptive) attack succeeds on **≤0.2%** of XGBoost attacks, **0.02–2.6%** of
+   Random Forest attacks (extended / report set) and **~7%** of MLP attacks,
+   while clean macro F1 stays within ±0.001 or rises.
 4. **For deployment, XGBoost wins:** best clean F1 (0.871), near-perfect
-   robustness after defence (99.85%), 1 MB, 0.26 ms/packet.
+   robustness after defence (99.85%), 1 MB, 0.10 ms/packet (Mac).
 
 ---
 
@@ -75,7 +78,7 @@ The successful O2 samples are split in half; one half is added to training
 
 | Model | Constraint set | Clean macro F1: undefended → defended | Adaptive re-attack ASR |
 |---|---|---|---|
-| Random Forest | report | 0.8559 → 0.8564 | **2.55%** |
+| Random Forest | report | 0.8559 → 0.8564 | **2.57%** (cloud 2.55%) |
 | Random Forest | extended | 0.8559 → 0.8572 | **0.02%** |
 | XGBoost | report | 0.8673 → 0.8667 | **0.18%** |
 | XGBoost | extended | 0.8673 → 0.8705 | **0.12%** |
@@ -83,36 +86,39 @@ The successful O2 samples are split in half; one half is added to training
 | MLP | extended | 0.8030 → 0.8151 | **7.88%** |
 
 - Adaptive attack success collapses: XGBoost from 29.3% to ~0.2%, the MLP from
-  75% to ~7%. The held-out *old* samples also stop working (static ASR ≤4%).
+  75% to ~7%. Random Forest on the report set falls less, from 4.9% to 2.6%
+  (it was already hard to attack); on the extended set it falls to 0.02%. The held-out *old* samples also stop working (static ASR ≤4%).
 - **Clean accuracy is not sacrificed** — it is flat to slightly higher. This is
   the opposite of the usual "adversarial training costs clean accuracy" worry
   (panel asks about this directly); report it honestly, it is a good result.
 
 **Secondary defence — feature hardening (dropping `mqtt.qos`, `mqtt.msgid`,
 `mqtt.hdrflags`): it does not help here.** Adaptive ASR with hardening is
-*higher* than adversarial training alone (e.g. XGBoost report 5.05% vs 0.18%;
-RF report 9.42% vs 2.55%). This is consistent with O2: the attacker was not
+*higher* than adversarial training alone in five of the six model/set pairs
+(e.g. XGBoost report 5.05% vs 0.18%; RF report 9.42% vs 2.57%). The one
+exception is MLP/extended, where hardening is lower (3.37% vs 7.88%). This is consistent with O2: the attacker was not
 mainly exploiting those fields, so removing them buys no robustness and costs a
 little accuracy. An honest negative result for the secondary mechanism.
 
 ## O4 — Robustness vs accuracy vs cost
 
 Robustness = 100 − adaptive attack success rate (extended set). Latency and size
-measured on the cloud machine; **confirm on the Mac**.
+measured on Rasheed's Mac (15 Nov 2026, defended models); the cloud machine was
+slower (RF ~5 ms, XGBoost 0.26 ms, MLP 0.32 ms).
 
 | Model | Clean F1 (base→def) | Robustness (base→def) | Latency/packet | Size |
 |---|---|---|---|---|
-| Random Forest | 0.856 → 0.857 | 95.1% → **99.98%** | ~5 ms | 42 MB |
-| XGBoost | 0.867 → **0.871** | 70.4% → **99.85%** | **0.26 ms** | **1.1 MB** |
-| MLP | 0.803 → 0.815 | 24.3% → 92.3% | 0.32 ms | **0.12 MB** |
+| Random Forest | 0.856 → 0.857 | 95.1% → **99.98%** | 3.28 ms | 42 MB |
+| XGBoost | 0.867 → **0.871** | 70.4% → **99.85%** | **0.10 ms** | **1.1 MB** |
+| MLP | 0.803 → 0.815 | 24.3% → 92.3% | 0.17 ms | **0.12 MB** |
 
 Figure: `results/phase1/figures/o4_tradeoff.png` — every model moves right
 (more robust) with no drop in height (clean F1).
 
 **Deployment recommendation:** **XGBoost, adversarially trained.** It has the
 best clean accuracy, near-complete robustness after defence, is small enough for
-a gateway (1 MB) and fast (0.26 ms/packet). Random Forest is equally robust but
-40× larger and 20× slower. The MLP is the smallest but the least robust even
+a gateway (1 MB) and fast (0.10 ms/packet). Random Forest is equally robust but
+about 40× larger and 30× slower. The MLP is the smallest but the least robust even
 after defence, so it is not recommended despite its size.
 
 ## Answers to the research questions
@@ -139,4 +145,4 @@ after defence, so it is not recommended despite its size.
 - The attacker may only *increase* padding (cannot shrink a real payload). A
   DoS able to use smaller payloads might evade more; a testbed question.
 - MQTTset feature space only; MQTT-IoT-IDS2020 cross-dataset work is separate.
-- Cloud numbers; confirm on the Mac. `flood` per-class rates are noisy (small n).
+- `flood` per-class rates are noisy (small n).
