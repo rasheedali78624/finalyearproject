@@ -112,32 +112,46 @@ def run_attack(model, Xte, yte_int, classes, constraint_set, budget, per_class, 
     legit_int = classes.index(config.NORMAL_CLASS)
     grid = candidate_changes(constraint_set, rng, n_random=max(0, budget))
     rows, adv_vectors, adv_meta = [], [], []
+    pred_all = model.predict(Xte)
     for cls in ATTACK_CLASSES:
         ci = classes.index(cls)
         # source population: this attack, correctly detected as NOT legitimate
-        idx = np.where((yte_int == ci) & (model.predict(Xte) != legit_int))[0]
+        idx = np.where((yte_int == ci) & (pred_all != legit_int))[0]
         n_detected = len(idx)
         # only MQTT packets the attacker sends can be reshaped (constraints.py);
         # bare TCP rows and broker replies are counted but not attacked
         idx = np.array([i for i in idx if K.in_attack_scope(Xte[i])], dtype=int)
         n_scope = len(idx)
+        # attacker-sent packets of this class the model ALREADY calls legitimate
+        # (missed with no attack at all) — needed for the end-to-end miss rate
+        n_missed = int(sum(1 for i in np.where((yte_int == ci) & (pred_all == legit_int))[0]
+                           if K.in_attack_scope(Xte[i])))
         if len(idx) == 0:
             rows.append({"constraint_set": constraint_set, "class": cls,
-                         "detected_rows": n_detected, "attacker_packets": 0, "evaluated": 0,
+                         "detected_rows": n_detected, "attacker_packets": 0,
+                         "missed_without_attack": n_missed, "evaluated": 0,
+                         "end_to_end_miss_pct": 100.0 if n_missed else float("nan"),
                          "note": "no correctly-detected attacker-sent packets"}); continue
         if len(idx) > per_class:
             idx = rng.choice(idx, per_class, replace=False)
-        succ = q_used = chg = 0
+        succ = q_used = chg = no_change = 0
         for i in idx:
             ok, q, best = attack_record(Xte[i], model, legit_int, grid, budget, cls)
             q_used += q
+            no_change += (q == 0)      # no allowed change exists for this packet
             if ok:
                 succ += 1; chg += K.n_changed_features(Xte[i], best)
                 adv_vectors.append(best); adv_meta.append(ci)
         n = len(idx)
         rows.append({"constraint_set": constraint_set, "class": cls,
-                     "detected_rows": n_detected, "attacker_packets": n_scope, "evaluated": n,
+                     "detected_rows": n_detected, "attacker_packets": n_scope,
+                     "missed_without_attack": n_missed, "evaluated": n,
+                     "no_allowed_change": no_change,
                      "evasions": succ, "attack_success_rate": pct(succ, n),
+                     # share of ALL this class's attacker packets that end up called
+                     # legitimate: missed outright, plus detected-then-evaded
+                     "end_to_end_miss_pct": round(
+                         100 * (n_missed + succ / n * n_scope) / (n_missed + n_scope), 2),
                      "clean_recall": 1.0,  # source is correctly detected by construction
                      "adversarial_recall": round(1 - succ / n, 4),
                      "recall_degradation": round(succ / n, 4),
@@ -194,8 +208,8 @@ def main():
 
     df = pd.DataFrame(all_rows)
     cols = ["model", "constraint_set", "class", "detected_rows", "attacker_packets",
-            "evaluated", "evasions",
-            "attack_success_rate", "clean_recall", "adversarial_recall",
+            "missed_without_attack", "evaluated", "no_allowed_change", "evasions",
+            "attack_success_rate", "end_to_end_miss_pct", "clean_recall", "adversarial_recall",
             "recall_degradation", "mean_queries", "mean_fields_changed"]
     df = df[[c for c in cols if c in df.columns]]
     save_table(df, "o2_attack_results", log, subdir="phase2")

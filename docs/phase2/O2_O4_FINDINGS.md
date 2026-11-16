@@ -1,5 +1,13 @@
 # O2–O4 Findings — Attacks, Defence, Trade-off
 
+> **⚠️ SUPERSEDED — DO NOT QUOTE THE O2–O4 NUMBERS BELOW (16 Nov 2026).**
+> `src/o2_validity_audit.py` showed that most evasions in this run changed rows
+> an attacker cannot reshape (bare TCP rows, broker replies, fixed-length
+> packets). The attack rules in `src/constraints.py` were corrected on 16 Nov;
+> the corrected run is being confirmed on the Mac and this document will be
+> rewritten from it.
+
+
 **Source:** `src/phase2_attacks.py`, `src/phase3_defence.py`,
 `src/phase4_tradeoff.py`, run 15 Nov 2026 in the cloud session on Rasheed's
 uploaded MQTTset copies (verified identical to his Mac copies in Phase 1).

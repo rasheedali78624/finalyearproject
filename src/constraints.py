@@ -159,8 +159,14 @@ def is_protocol_valid(x_orig, x_new, attack_class=None):
         return False
     if g(x_new, "mqtt.len") < g(x_orig, "mqtt.len") - 1e-9:
         return False
-    # tcp.len must still hold at least the MQTT bytes
-    if mtype != 0 and g(x_new, "tcp.len") < g(x_new, "mqtt.len") + MQTT_OVERHEAD - 1e-9:
+    # tcp.len is dependent: it must move by exactly the bytes of padding added.
+    # (An absolute rule "tcp.len >= mqtt.len + 2" was used before 16 Nov 2026,
+    # but 11.95% of real MQTT rows in MQTTset do not satisfy it, because one TCP
+    # segment can hold part of a packet. It silently blocked every change to
+    # those rows, so the rule is now relative to the original packet.)
+    d_tcp = g(x_new, "tcp.len") - g(x_orig, "tcp.len")
+    d_mqtt = g(x_new, "mqtt.len") - g(x_orig, "mqtt.len")
+    if abs(d_tcp - d_mqtt) > 1e-9:
         return False
     if mtype == PUBLISH:
         qos = int(round(g(x_new, "mqtt.qos")))

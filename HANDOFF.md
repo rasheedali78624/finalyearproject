@@ -74,6 +74,13 @@ a defence. Four objectives:
 
 ## 6. What is done, with the key numbers
 
+> **⚠️ 16 Nov 2026: the O2, O3 and O4 numbers in this section are superseded.**
+> A validity audit (`src/o2_validity_audit.py`) found the attack was changing
+> rows an attacker cannot reshape. `src/constraints.py` now restricts the attack
+> to client-sent MQTT packets, padding to variable-length types, and uses a
+> relative tcp.len rule. Re-run `run_phase2to4.py` then the audit on the Mac and
+> rewrite `docs/phase2/O2_O4_FINDINGS.md` from that run. O1 is unaffected.
+
 All numbers are from cloud runs on verified-identical data; the Mac reproduced
 Phase 1 exactly and, on 15 Nov 2026, O2–O4 as well (tables in
 `docs/phase2/mac_run_20261115/`; only difference RF/report adaptive ASR 2.57%
