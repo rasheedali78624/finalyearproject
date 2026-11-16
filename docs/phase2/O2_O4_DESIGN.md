@@ -59,6 +59,12 @@ Running both and comparing them is the point: the gap shows how much the
 detector's robustness depends on fields your original report assumed the
 attacker could not touch.
 
+**Update 16 Nov 2026.** Three rules were tightened after a validity audit: only
+MQTT packet types a client sends are attacked (bare TCP rows and broker replies
+are never changed); padding is allowed only on variable-length packet types;
+and `tcp.len` must move by exactly the padding added. See `O2_O4_FINDINGS.md`,
+"What was corrected".
+
 **What keeps a packet valid (`is_protocol_valid`).** After any change, the code
 checks the MQTT 3.1.1 structural rules you already measured in Phase 2
 groundwork: the message type is unchanged, the header flags still match the

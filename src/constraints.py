@@ -36,6 +36,26 @@ IDX = {f: i for i, f in enumerate(FEATURES)}
 # Packet type numbers
 CONNECT, PUBLISH = 1, 3
 
+# WHICH PACKETS THE ATTACKER CAN RESHAPE (added 16 Nov 2026 after
+# o2_validity_audit.py showed many "evasions" were not realistic packets).
+# MQTT 3.1.1 packet types a CLIENT sends: CONNECT 1, PUBLISH 3, PUBREL 6,
+# SUBSCRIBE 8, UNSUBSCRIBE 10, PINGREQ 12, DISCONNECT 14. Every other row is
+# out of the attacker's hands and is never perturbed:
+#   - type 0 = bare TCP, no MQTT packet in the row. The dataset has no IP/port
+#     fields, so we cannot tell whose TCP packet it is; we leave it alone.
+#   - CONNACK 2, PUBACK 4, PUBREC 5, PUBCOMP 7, SUBACK 9, UNSUBACK 11,
+#     PINGRESP 13 = replies. In MQTTset the clients only publish, so these come
+#     from the broker.
+ATTACKER_SENT = {1, 3, 6, 8, 10, 12, 14}
+# Of those, only these have a variable length that can be padded (longer
+# client id / topic / payload). The others have a fixed length in the standard.
+PADDABLE = {1, 3, 8, 10}
+
+
+def in_attack_scope(x):
+    """True if this row is an MQTT packet the attacker sends (so may reshape)."""
+    return int(round(x[IDX["mqtt.msgtype"]])) in ATTACKER_SENT
+
 # Realistic bounds, measured from the data (see the inline note in phase2_attacks).
 TIME_DELTA_CAP = 60.0      # seconds; the largest legitimate inter-packet gap observed
 MQTT_LEN_CAP = 692.0       # bytes; largest mqtt.len observed, so padding stays in-range
@@ -73,7 +93,7 @@ def apply_perturbation(x, changes):
         v[IDX["tcp.time_delta"]] = nd
 
     # --- padding: mqtt.len may only INCREASE; tcp.len moves with it (dependent) ---
-    if "mqtt.len" in changes:
+    if "mqtt.len" in changes and mtype in PADDABLE:
         old_len = v[IDX["mqtt.len"]]
         new_len = min(max(changes["mqtt.len"], old_len), MQTT_LEN_CAP)
         v[IDX["tcp.len"]] = v[IDX["tcp.len"]] + (new_len - old_len)
@@ -110,13 +130,25 @@ IMMUTABLE = ["mqtt.msgtype", "mqtt.protoname", "mqtt.proto_len", "mqtt.ver",
              "mqtt.conflag.cleansess", "mqtt.conflag.passwd", "mqtt.conflag.uname"]
 
 
-def is_protocol_valid(x_orig, x_new):
+def is_protocol_valid(x_orig, x_new, attack_class=None):
     """
     True if x_new is a valid MQTT 3.1.1 packet reachable from x_orig by an allowed
     change. Mirrors the structural rules measured in constraint_checks.py.
+    attack_class (e.g. "slowite") switches on rules that keep that attack working.
     """
     def g(v, f):
         return v[IDX[f]]
+    mtype0 = int(round(g(x_orig, "mqtt.msgtype")))
+    # rows the attacker does not send may not change at all
+    if mtype0 not in ATTACKER_SENT and np.any(np.abs(x_new - x_orig) > 1e-9):
+        return False
+    # fixed-length packet types cannot be padded
+    if mtype0 not in PADDABLE and abs(g(x_new, "mqtt.len") - g(x_orig, "mqtt.len")) > 1e-9:
+        return False
+    # SlowITe works by holding connections open with a long keep-alive
+    # (constraint table, row 11): changing it stops the attack.
+    if attack_class == "slowite" and abs(g(x_new, "mqtt.kalive") - g(x_orig, "mqtt.kalive")) > 1e-9:
+        return False
     # immutable fields unchanged
     for f in IMMUTABLE:
         if abs(g(x_new, f) - g(x_orig, f)) > 1e-6:
@@ -127,8 +159,14 @@ def is_protocol_valid(x_orig, x_new):
         return False
     if g(x_new, "mqtt.len") < g(x_orig, "mqtt.len") - 1e-9:
         return False
-    # tcp.len must still hold at least the MQTT bytes
-    if mtype != 0 and g(x_new, "tcp.len") < g(x_new, "mqtt.len") + MQTT_OVERHEAD - 1e-9:
+    # tcp.len is dependent: it must move by exactly the bytes of padding added.
+    # (An absolute rule "tcp.len >= mqtt.len + 2" was used before 16 Nov 2026,
+    # but 11.95% of real MQTT rows in MQTTset do not satisfy it, because one TCP
+    # segment can hold part of a packet. It silently blocked every change to
+    # those rows, so the rule is now relative to the original packet.)
+    d_tcp = g(x_new, "tcp.len") - g(x_orig, "tcp.len")
+    d_mqtt = g(x_new, "mqtt.len") - g(x_orig, "mqtt.len")
+    if abs(d_tcp - d_mqtt) > 1e-9:
         return False
     if mtype == PUBLISH:
         qos = int(round(g(x_new, "mqtt.qos")))

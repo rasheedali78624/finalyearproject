@@ -65,6 +65,12 @@ def asr_on(model, Xte, yte, classes, cset, budget, per_class):
     return round(float(np.mean(vals)), 2) if vals else float("nan"), rows
 
 
+def mean_e2e(rows):
+    """Mean over attack classes of the end-to-end miss rate (see phase2_attacks)."""
+    vals = [r["end_to_end_miss_pct"] for r in rows if "end_to_end_miss_pct" in r]
+    return round(float(np.mean(vals)), 2) if vals else float("nan")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--budget", type=int, default=120)
@@ -95,7 +101,7 @@ def main():
         for cset in [c.strip() for c in args.sets.split(",")]:
             advX, advY = load_adv(mname, cset)
             if advX is None:
-                log(f"  [{cset}] no O2 samples found — run phase2_attacks.py first"); continue
+                log(f"  [{cset}] no O2 evasion samples for this model/set (the attack found none, or phase2_attacks.py has not run)"); continue
             # Split O2 samples: half to train the defence, half held out to measure
             # whether the OLD samples still evade (static robustness). This avoids
             # evaluating the defence on its own training data.
@@ -112,11 +118,12 @@ def main():
             static_asr = (pct(int(np.sum(adv_model.predict(advX[te_i]) == legit_int)), len(te_i))
                           if len(te_i) else float("nan"))
             # adaptive re-attack: attacker re-runs the search against the defended model
-            adaptive_asr, _ = asr_on(adv_model, Xte, yte, classes, cset, args.budget, args.per_class)
+            adaptive_asr, arows = asr_on(adv_model, Xte, yte, classes, cset, args.budget, args.per_class)
             row = {"model": mname, "constraint_set": cset, "defence": "adversarial_training",
                    "clean_f1_undefended": round(base_f1, 4), "clean_f1_defended": round(adv_f1, 4),
                    "clean_f1_change": round(adv_f1 - base_f1, 4),
                    "static_asr_old_samples": static_asr, "adaptive_reattack_asr": adaptive_asr,
+                   "adaptive_end_to_end_miss": mean_e2e(arows),
                    "adv_samples_trained": len(tr_i)}
             rows.append(row)
             log(f"  [{cset}] adv-trained macro F1 {adv_f1:.4f} (change {adv_f1-base_f1:+.4f}); "
@@ -134,13 +141,14 @@ def main():
                 h_f1 = macro_f1(hmw, Xte, yte, classes)
                 h_static = (pct(int(np.sum(hmw.predict(advX[te_i]) == legit_int)), len(te_i))
                             if len(te_i) else float("nan"))
-                h_asr, _ = asr_on(hmw, Xte, yte, classes, cset, args.budget, args.per_class)
+                h_asr, hrows = asr_on(hmw, Xte, yte, classes, cset, args.budget, args.per_class)
                 rows.append({"model": mname, "constraint_set": cset,
                              "defence": "adv_training+feature_hardening",
                              "clean_f1_undefended": round(base_f1, 4),
                              "clean_f1_defended": round(h_f1, 4),
                              "clean_f1_change": round(h_f1 - base_f1, 4),
                              "static_asr_old_samples": h_static, "adaptive_reattack_asr": h_asr,
+                             "adaptive_end_to_end_miss": mean_e2e(hrows),
                              "adv_samples_trained": len(tr_i)})
                 log(f"  [{cset}] +hardening macro F1 {h_f1:.4f} "
                     f"(change {h_f1-base_f1:+.4f}); adaptive re-attack ASR {h_asr}%")

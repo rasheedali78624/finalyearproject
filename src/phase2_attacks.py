@@ -10,6 +10,10 @@ parameters. So it cannot compute gradients. It searches: it proposes allowed,
 protocol-valid changes to an attack packet and observes only the detector's
 decision (a decision-based black-box search), keeping within a query budget.
 
+Only MQTT packets the attacker itself sends are attacked (CONNECT, PUBLISH,
+SUBSCRIBE, ...). Bare TCP rows and broker replies are left alone; the table
+counts them (detected_rows vs attacker_packets). See constraints.py.
+
 For each attack record the trained model classifies correctly, the attacker
 tries to make the model output "legitimate" by changing ONLY the fields its
 constraint set allows (constraints.py), updating dependent fields, and keeping
@@ -80,7 +84,7 @@ def build_candidate(x, change):
     return K.apply_perturbation(x, resolved)
 
 
-def attack_record(x, model, legit_int, grid, budget):
+def attack_record(x, model, legit_int, grid, budget, attack_class=None):
     """
     Try to flip one record to legitimate within `budget` queries.
     Returns (success, queries_used, best_vector_or_None).
@@ -91,7 +95,9 @@ def attack_record(x, model, legit_int, grid, budget):
         if used >= budget:
             break
         xc = build_candidate(x, ch)
-        if K.is_protocol_valid(x, xc):
+        # skip candidates that are invalid or change nothing (e.g. padding a
+        # packet type that cannot be padded)
+        if K.is_protocol_valid(x, xc, attack_class) and K.n_changed_features(x, xc) > 0:
             cands.append(xc); used += 1
     if not cands:
         return False, 0, None
@@ -106,25 +112,46 @@ def run_attack(model, Xte, yte_int, classes, constraint_set, budget, per_class, 
     legit_int = classes.index(config.NORMAL_CLASS)
     grid = candidate_changes(constraint_set, rng, n_random=max(0, budget))
     rows, adv_vectors, adv_meta = [], [], []
+    pred_all = model.predict(Xte)
     for cls in ATTACK_CLASSES:
         ci = classes.index(cls)
         # source population: this attack, correctly detected as NOT legitimate
-        idx = np.where((yte_int == ci) & (model.predict(Xte) != legit_int))[0]
+        idx = np.where((yte_int == ci) & (pred_all != legit_int))[0]
+        n_detected = len(idx)
+        # only MQTT packets the attacker sends can be reshaped (constraints.py);
+        # bare TCP rows and broker replies are counted but not attacked
+        idx = np.array([i for i in idx if K.in_attack_scope(Xte[i])], dtype=int)
+        n_scope = len(idx)
+        # attacker-sent packets of this class the model ALREADY calls legitimate
+        # (missed with no attack at all) — needed for the end-to-end miss rate
+        n_missed = int(sum(1 for i in np.where((yte_int == ci) & (pred_all == legit_int))[0]
+                           if K.in_attack_scope(Xte[i])))
         if len(idx) == 0:
-            rows.append({"constraint_set": constraint_set, "class": cls, "evaluated": 0,
-                         "note": "no correctly-detected source records"}); continue
+            rows.append({"constraint_set": constraint_set, "class": cls,
+                         "detected_rows": n_detected, "attacker_packets": 0,
+                         "missed_without_attack": n_missed, "evaluated": 0,
+                         "end_to_end_miss_pct": 100.0 if n_missed else float("nan"),
+                         "note": "no correctly-detected attacker-sent packets"}); continue
         if len(idx) > per_class:
             idx = rng.choice(idx, per_class, replace=False)
-        succ = q_used = chg = 0
+        succ = q_used = chg = no_change = 0
         for i in idx:
-            ok, q, best = attack_record(Xte[i], model, legit_int, grid, budget)
+            ok, q, best = attack_record(Xte[i], model, legit_int, grid, budget, cls)
             q_used += q
+            no_change += (q == 0)      # no allowed change exists for this packet
             if ok:
                 succ += 1; chg += K.n_changed_features(Xte[i], best)
                 adv_vectors.append(best); adv_meta.append(ci)
         n = len(idx)
-        rows.append({"constraint_set": constraint_set, "class": cls, "evaluated": n,
+        rows.append({"constraint_set": constraint_set, "class": cls,
+                     "detected_rows": n_detected, "attacker_packets": n_scope,
+                     "missed_without_attack": n_missed, "evaluated": n,
+                     "no_allowed_change": no_change,
                      "evasions": succ, "attack_success_rate": pct(succ, n),
+                     # share of ALL this class's attacker packets that end up called
+                     # legitimate: missed outright, plus detected-then-evaded
+                     "end_to_end_miss_pct": round(
+                         100 * (n_missed + succ / n * n_scope) / (n_missed + n_scope), 2),
                      "clean_recall": 1.0,  # source is correctly detected by construction
                      "adversarial_recall": round(1 - succ / n, 4),
                      "recall_degradation": round(succ / n, 4),
@@ -172,15 +199,17 @@ def main():
                                      if k in ("constraint_set", "class", "evaluated",
                                               "attack_success_rate", "mean_queries", "mean_fields_changed")))
             all_rows += rows
+            # remove any file from an earlier run first, so O3 never trains on stale samples
+            npz = config.PROJECT_ROOT / "results" / "phase2" / "attacks" / f"{mname}_{cset}.npz"
+            npz.unlink(missing_ok=True)
             if adv:
-                np.savez_compressed(
-                    config.PROJECT_ROOT / "results" / "phase2" / "attacks" / f"{mname}_{cset}.npz",
-                    X=np.array(adv), y=np.array(meta))
+                np.savez_compressed(npz, X=np.array(adv), y=np.array(meta))
             log(f"  [{mname}/{cset}] {len(adv)} adversarial samples kept  ({time.time()-tS:.0f}s)")
 
     df = pd.DataFrame(all_rows)
-    cols = ["model", "constraint_set", "class", "evaluated", "evasions",
-            "attack_success_rate", "clean_recall", "adversarial_recall",
+    cols = ["model", "constraint_set", "class", "detected_rows", "attacker_packets",
+            "missed_without_attack", "evaluated", "no_allowed_change", "evasions",
+            "attack_success_rate", "end_to_end_miss_pct", "clean_recall", "adversarial_recall",
             "recall_degradation", "mean_queries", "mean_fields_changed"]
     df = df[[c for c in cols if c in df.columns]]
     save_table(df, "o2_attack_results", log, subdir="phase2")
