@@ -111,6 +111,7 @@ clean F1 0.871, robustness 99.85%, 1.1 MB, 0.10 ms/packet (Mac). Figure
 | `evaluate.py` | metrics, latency, model size, plots |
 | `run_phase1.py` | runs all of O1 end to end |
 | `sensitivity_checks.py` | class-weighting + memorisation/ambiguity checks |
+| `overfitting_check.py` | train vs test score per model (panel's overfitting comment); findings in `docs/phase1/OVERFITTING_CHECK.md` |
 | `constraints.py` | **O2/O3 shared**: constraint set + protocol-validity checker |
 | `phase2_attacks.py` | **O2** attack + evaluation |
 | `phase3_defence.py` | **O3** adversarial training + adaptive re-attack |
@@ -144,6 +145,9 @@ Outputs go to `results/phaseN/tables`, `results/phase1/figures`, `results/phase1
 
 ## 10. Open decisions / next steps
 
+- **Panel comments (26 Aug) were: too ambitious/prioritise; study the data
+  (balance, overfitting).** No further datasets are planned; ask Dr. Bryan to
+  move MQTT-IoT-IDS2020 (named in the report as secondary dataset) to future work.
 - **Decide with Dr. Bryan:** whether to run all of O2–O4 on the **MQTT-only**
   population as well as all-rows Variant B (direction review recommends it;
   not yet done). This is the main open modelling choice.
