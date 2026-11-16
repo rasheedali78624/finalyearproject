@@ -74,34 +74,30 @@ a defence. Four objectives:
 
 ## 6. What is done, with the key numbers
 
-> **⚠️ 16 Nov 2026: the O2, O3 and O4 numbers in this section are superseded.**
-> A validity audit (`src/o2_validity_audit.py`) found the attack was changing
-> rows an attacker cannot reshape. `src/constraints.py` now restricts the attack
-> to client-sent MQTT packets, padding to variable-length types, and uses a
-> relative tcp.len rule. Re-run `run_phase2to4.py` then the audit on the Mac and
-> rewrite `docs/phase2/O2_O4_FINDINGS.md` from that run. O1 is unaffected.
-
-All numbers are from cloud runs on verified-identical data; the Mac reproduced
-Phase 1 exactly and, on 15 Nov 2026, O2–O4 as well (tables in
-`docs/phase2/mac_run_20261115/`; only difference RF/report adaptive ASR 2.57%
-vs 2.55%). Latency figures are the Mac's.
+O1 numbers are from cloud runs on verified-identical data, reproduced exactly
+on the Mac. **O2–O4 numbers are from the Mac run of 16 Nov 2026 with corrected
+attack rules** (`docs/phase2/mac_run_20261116/`). The 15 Nov numbers (RF 4.9%,
+XGBoost 29.3%, MLP 75.2%) are **withdrawn**: `src/o2_validity_audit.py` showed
+most of those evasions changed rows an attacker cannot reshape (bare TCP rows,
+broker replies, fixed-length packets). Never quote them.
 
 **O1 (Phase 1):** XGBoost is best. Macro F1 on Variant B: XGBoost 0.8673, RF
 0.8559, MLP 0.8030. On MQTT-only packets, XGBoost reaches 0.979. Full detail in
-`docs/phase1/PHASE1_FINDINGS.md`.
+`docs/phase1/PHASE1_FINDINGS.md`. Train-vs-test gaps (overfitting check):
+XGBoost 0.0050, MLP 0.0056, RF 0.0482 (`docs/phase1/OVERFITTING_CHECK.md`).
 
-**O2 (attacks):** mean attack success over attack classes, report constraint set
-(timing/padding/keep-alive): **RF 4.9%, XGBoost 29.3%, MLP 75.2%**. The MLP is
-fragile (flipped by one field); tree ensembles resist. Adding QoS/retain
-("extended" set) barely changes this. `docs/phase2/O2_O4_FINDINGS.md`.
+**O2 (attacks):** only client-sent MQTT packets are attacked. Mean attack
+success over five classes, report set: **RF 10.83%, XGBoost 16.48%, MLP
+80.72%**. For the tree models this is almost all the `malformed` class (RF
+51.22%, XGBoost 82.04%); without `malformed` the means are RF 0.73%, XGBoost
+0.09%, MLP 76.21%. Always give both. `docs/phase2/O2_O4_FINDINGS.md`.
 
-**O3 (defence):** adversarial training cuts adaptive re-attack success to ≤0.2%
-(XGBoost), 0.02% extended / 2.57% report (Random Forest) and ~7% (MLP); clean
-macro F1 stays within ±0.001 or rises. Feature hardening gives no benefit in
-five of six model/set pairs (exception: MLP/extended, 3.37% vs 7.88%).
+**O3 (defence):** adversarial training, adaptive re-attack, report set:
+XGBoost 16.48% → 0.39%, MLP 80.72% → 6.64%, RF 10.83% → 6.79%; clean macro F1
+moves by at most 0.002. Feature hardening gives no consistent benefit.
 
 **O4 (trade-off):** XGBoost adversarially trained is the best operating point —
-clean F1 0.871, robustness 99.85%, 1.1 MB, 0.10 ms/packet (Mac). Figure
+clean F1 0.8688, robustness 99.58%, 1.1 MB, 0.106 ms/packet (Mac). Figure
 `results/phase1/figures/o4_tradeoff.png`.
 
 ## 7. File map (`src/`)
@@ -120,6 +116,7 @@ clean F1 0.871, robustness 99.85%, 1.1 MB, 0.10 ms/packet (Mac). Figure
 | `sensitivity_checks.py` | class-weighting + memorisation/ambiguity checks |
 | `overfitting_check.py` | train vs test score per model (panel's overfitting comment); findings in `docs/phase1/OVERFITTING_CHECK.md` |
 | `constraints.py` | **O2/O3 shared**: constraint set + protocol-validity checker |
+| `o2_validity_audit.py` | sorts saved evasions by packet type (attacker-sent / broker reply / bare TCP / impossible length); run after every O2 run |
 | `phase2_attacks.py` | **O2** attack + evaluation |
 | `phase3_defence.py` | **O3** adversarial training + adaptive re-attack |
 | `phase4_tradeoff.py` | **O4** robustness/accuracy/cost table + figure |
@@ -161,7 +158,11 @@ Outputs go to `results/phaseN/tables`, `results/phase1/figures`, `results/phase1
 - Four Phase-1 decisions still to confirm with Dr. Bryan: headline framing,
   class weighting, dropping `mqtt.msg`, the small `flood` class (see
   `PHASE1_FINDINGS.md` §6).
-- O2–O4 confirmed on the Mac (15 Nov). Still to do: the Mosquitto validity check.
+- Mosquitto validity check: not run. `mosquitto_testbed/replay_check.py` counts a
+  packet as accepted once sent, without waiting for the broker's reply; rewrite
+  it before use. Mosquitto is not yet installed on the Mac (`brew install mosquitto`).
+- O2–O4 are single-seed runs: no confidence intervals yet.
+- Bare TCP rows are excluded from the attack (sender unknown); tell Dr. Bryan.
 - Report corrections needed (see `CONSTRAINT_TABLE.md` and direction review):
   33→20 features, 7→6 text columns, 22.6%→69.59% leakage, `mqtt.conflags` and
   `tcp.len` are *dependent* not immutable/mutable.
