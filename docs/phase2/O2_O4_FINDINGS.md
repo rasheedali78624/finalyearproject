@@ -41,9 +41,10 @@ Also: SlowITe's keep-alive is now fixed (constraint table row 11), and the
 attack table records `no_allowed_change` (0 for every class in this run, so
 every evaluated packet was genuinely attacked).
 
-**Audit of this run:** to be re-confirmed with `o2_validity_audit.py` on the
-final sample files (the previous corrected run showed 100% attacker-sent MQTT
-packets, 0 impossible lengths).
+**Audit of this run (16 Nov, Mac):** all 6,022 saved evasions across the three
+models and two constraint sets are attacker-sent MQTT packets; 0 impossible
+lengths, 0 broker replies, 0 bare TCP rows. The per-class counts equal the
+`evasions` column of the attack table.
 
 ---
 
