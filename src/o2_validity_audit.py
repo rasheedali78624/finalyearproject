@@ -39,7 +39,7 @@ log = Logger("o2_validity_audit")
 
 ATTACK_DIR = config.PROJECT_ROOT / "results" / "phase2" / "attacks"
 # MQTT 3.1.1 packet types (section 2.2.1)
-BROKER_SENT = {2, 4, 5, 9, 11, 13}          # CONNACK PUBACK PUBREC SUBACK UNSUBACK PINGRESP
+BROKER_SENT = set(range(1, 15)) - K.ATTACKER_SENT   # CONNACK PUBACK PUBREC PUBCOMP SUBACK UNSUBACK PINGRESP
 FIXED_LEN = {2: 2, 4: 2, 5: 2, 6: 2, 7: 2, 11: 2, 12: 0, 13: 0, 14: 0}
 GROUPS = ["impossible_length", "broker_sent", "bare_tcp", "attacker_mqtt"]
 

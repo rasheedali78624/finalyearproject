@@ -95,7 +95,7 @@ def main():
         for cset in [c.strip() for c in args.sets.split(",")]:
             advX, advY = load_adv(mname, cset)
             if advX is None:
-                log(f"  [{cset}] no O2 samples found — run phase2_attacks.py first"); continue
+                log(f"  [{cset}] no O2 evasion samples for this model/set (the attack found none, or phase2_attacks.py has not run)"); continue
             # Split O2 samples: half to train the defence, half held out to measure
             # whether the OLD samples still evade (static robustness). This avoids
             # evaluating the defence on its own training data.
